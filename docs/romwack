@@ -1,0 +1,65 @@
+Reference
+- p83 @ Amiga ROM Kernel Reference Manual Exec (1986, ark:/13960/t90964j8b)
+- There should be better/newer documentation for this somewhere, covering changes made later.
+- Seen it named romwack, rom-wack, romwock.
+
+Serial setup
+- 9600bps 8N2, no flow control.
+- RawIOInit() actually sets SERPER to 372, which is the NTSC value, regardless of PAL/NTSC.
+- 9509.10 PAL, 9596.63 NTSC.
+- With 1 stop bit, RomWack will sometimes miss incoming characters.
+
+Entering debugger
+- Call to exec.library's debug(0); (execbase -114).
+- loadwb -debug then hidden menu -> debug.
+- right mouse button on guru dialog (if Amiga doesn't reboot first).
+- send DEL (0x7F) on serial, in power led blinking situation before guru reboot.
+
+Notes
+- Use framesize of 0 to alter write-only registers.
+- A7/SSP can't be altered directly, but USP can (U).
+- list will crash if not run with current at a task structure.
+- Maybe it'd be a good idea to poke SERPER for faster serial.
+
+Readline
+bs deletes last char
+^X deletes whole line
+
+Movement
+\r|<cr> dump current
+n go to address 0xn
+:n set frame size to 0xn
+. advance one frame
+, back one frame
+<sp>|> advance 16bit word
+<bs>|< back 16bit word
++n advance 0xn bytes
+-n back 0xn bytes
+[ follow current longword pointer
+] back
+
+Memory Operations
+= modify 16bit word from current
+alter modify several 16bit word from current
+limit|^ set range upper bound to current address
+find search 8/16/32bit pattern from current to upper bound
+fill fills 8/16/32bit pattern from current to upper bound
+
+Machine state
+regs dumps registers
+!An|!Dn|!U show (and alter) registers
+go continues from current address
+resume|^D continues from PC
+^I|<tab> single instruction step
+
+Breakpoint
+set sets breakpoint at current
+clear clears breakpoint at current
+show shows breakpoints
+reset clears all breakpoints
+
+Other
+user force-enables multitasking
+ig|boot reboots
+? shows help
+list dumps process info from current (has to be a task structure)

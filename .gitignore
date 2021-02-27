@@ -1,0 +1,10 @@
+__pycache__
+build/
+*.adf
+*.dump
+*.dd
+*.o
+*.L68
+*.S68
+amigasnips.db*
+TODO

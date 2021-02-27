@@ -1,0 +1,7 @@
+Enters execlib->Debug() in an infinite loop.
+
+Great as a very lazy way to enter the debugger to then use amigaXfer.
+This bootblock is particularly useful to write if you're using CrashEntry and don't have any bootable floppies.
+In which case, you want a blank disk and Format enabled.
+
+Refer to the bootstrapping documentation.
