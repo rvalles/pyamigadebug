@@ -1,10 +1,12 @@
 __pycache__
 build/
+asm/debug
 *.adf
 *.dump
 *.dd
 *.o
 *.L68
 *.S68
-amigasnips.db*
+*.kate-swp
+amigasnips.db
 TODO
