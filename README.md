@@ -1,18 +1,31 @@
 # Framework for abstracting Amiga debuggers.
 
-APIs are not yet stable.
+This project provides abstration to control an Amiga remotely using a debugger.
 
-I include a tool based on this, amigaXfer, as a preview.
+The APIs are not yet stable.
+
+I include an end-user ready GUI tool based on this, amigaXfer, as a preview.
 
 This is a tool for data transfer between an Amiga and another computer using
-the serial port. No agent required on Amiga's side.
+the serial port. No agent required on Amiga's side, as it uses the kickstart
+rom's debugger to take control of the Amiga.
 
-It is possible to bootstrap an Amiga for which no bootable disks are available.
+There's multiple ways to get into this debugger. A simple one is through
+Workbench's debug menu, present when wb is loaded using `loadwb -debug`.
+
+Selecting the Debug, RomWack or SAD menu option in Workbench 1.x/2.x/3.x will
+then enter the debugger and enable amigaXfer usage.
+
+Alternatively, it is possible to bootstrap an Amiga for which no bootable disks
+are available.
 
 https://rvalles.net/bootstrapping-an-amiga-without-a-bootable-amiga-floppy.html
 
 Source code (python and m68k assembly) is available under MIT license, and runs
-on multiple platforms, requiring Python 3.8+, pyserial and wxpython.
+on multiple platforms, requiring Python 3.8+, pyserial and wxpython
+
+It is able to e.g. read/write/compare floppies, install bootblocks, send/receive
+files and dump the kickstart rom.
 
 Highlights:
 * Uses the kickstart's serial debugger, and thus it does not require an agent.
