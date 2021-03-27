@@ -167,7 +167,7 @@ class SetupDialog(wx.Frame):
             wx.GetApp().RedirectStdio()
         print(f'port {serialdev}, baud {baudrate}, debugger {debugger}, paranoid {paranoid}, debug {debug}, dangerfast {dangerfast}, crashentry {crashentry}')
         if crashentry:
-            print("*** Crash entry mode: Refer to documentation.")
+            print("*** Crash entry mode: Refer to bootstrapping documentation.")
             print("Overriding settings for safety. Serial will run at 9600.")
             baudrate = 0
             #debug = True
@@ -196,7 +196,7 @@ class SetupDialog(wx.Frame):
         if crashentry:
             print('Syncing with debugger.')
         else:
-            print('Syncing with debugger. Please have Amiga enter debugger now.')
+            print('Syncing with debugger. Please have Amiga enter debugger now. Refer to README for help.')
         if debugger==0:
             self.debugger = RomWack(syncabort=self.syncabort, serial=self.ser, Debug=debug)
         elif debugger==1:
