@@ -293,9 +293,7 @@ class ExecLibrary(Library):
             name = self.amiga.readstr(nameptr)
             flags = self.amiga.peek8(curmod+self.rt_Flags)
             version = self.amiga.peek8(curmod+self.rt_Version)
-            pri = self.amiga.peek8(curmod+self.rt_Pri)
-            if pri > 127:
-                pri = 0 - (pri^0xFF) - 1
+            pri = self.amiga.speek8(curmod+self.rt_Pri)
             print(f"addr {hex(curmod)} name: {name} flags: {bin(flags)} version: {version} pri: {pri}")
             resmodules += 4
             curmod = self.amiga.peek32(resmodules)
