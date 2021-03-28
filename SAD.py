@@ -213,13 +213,12 @@ class SAD(AmigaDebugger):
         res1 = self.serial.read(2)
         self._sync()
         return buf
-    #FIXME: Not really nop. The intent is to cause reprint of SAD prompt.
     def nop(self):
         while self.serial.in_waiting:
             while self.serial.in_waiting:
                 self.serial.read(1)
             time.sleep(0.002)
-        self.serial.write(b'\xAF' + self.sadcmd['READ_BYTE'] + b'\0\0\0\0')
+        self.serial.write(b'\xAF' + self.sadcmd['NOP'])
         self.serial.flush()
         return
     def _jsr(self, addr):
