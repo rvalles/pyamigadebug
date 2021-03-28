@@ -95,11 +95,13 @@ class SAD(AmigaDebugger):
             bugged = True
         self._sync()
         return bugged
-    def peek32(self, addr):
+    def _flush(self):
         while self.serial.in_waiting:
             while self.serial.in_waiting:
                 self.serial.read(1)
             time.sleep(0.002)
+    def peek32(self, addr):
+        self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['READ_LONG'])
         self.serial.write(struct.pack(">I", addr))
         self.serial.flush()
@@ -113,10 +115,7 @@ class SAD(AmigaDebugger):
             valuebytes = self._readmem(addr, 2)
             value = struct.unpack(">H", valuebytes)[0]
             return value
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['READ_WORD'])
         self.serial.write(struct.pack(">I", addr))
         self.serial.flush()
@@ -126,10 +125,7 @@ class SAD(AmigaDebugger):
         self._sync()
         return value
     def peek8(self, addr):
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['READ_BYTE'])
         self.serial.write(struct.pack(">I", addr))
         self.serial.flush()
@@ -139,10 +135,7 @@ class SAD(AmigaDebugger):
         self._sync()
         return value
     def poke32(self, addr, value):
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['WRITE_LONG'])
         self.serial.write(struct.pack(">I", addr))
         if value < 0:
@@ -155,10 +148,7 @@ class SAD(AmigaDebugger):
         self._sync()
         return
     def poke16(self, addr, value):
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['WRITE_WORD'])
         self.serial.write(struct.pack(">I", addr))
         self.serial.write(struct.pack(">H", value))
@@ -172,10 +162,7 @@ class SAD(AmigaDebugger):
             valuebytes = struct.pack(">H", value)
             self._writemem(addr, valuebytes)
             return
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['WRITE_BYTE'])
         self.serial.write(struct.pack(">I", addr))
         self.serial.write(struct.pack(">B", value))
@@ -185,10 +172,7 @@ class SAD(AmigaDebugger):
         self._sync()
         return
     def _readmem(self, addr, size):
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['READ_ARRAY'])
         self.serial.write(struct.pack(">I", addr))
         self.serial.write(struct.pack(">I", size))
@@ -199,10 +183,7 @@ class SAD(AmigaDebugger):
         self._sync()
         return buf
     def _writemem(self, addr, buf):
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['WRITE_ARRAY'])
         self.serial.write(struct.pack(">I", addr))
         self.serial.write(struct.pack(">I", len(buf)))
@@ -214,18 +195,12 @@ class SAD(AmigaDebugger):
         self._sync()
         return buf
     def nop(self):
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['NOP'])
         self.serial.flush()
         return
     def _jsr(self, addr):
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         if self.debug:
             print(f"Calling {hex(addr)}.")
         self.serial.write(b'\xAF' + self.sadcmd['CALL_ADDRESS'])
@@ -234,18 +209,12 @@ class SAD(AmigaDebugger):
         ack = self.serial.read(2)
         return
     def resume(self):
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['RETURN_TO_SYSTEM'] + b'\0\0\0\0')
         ack = self.serial.read(2)
         return
     def reboot(self):
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['RESET'] + b'\xFF\xFF\xFF\xFF')
         ack = self.serial.read(1)
         return
@@ -263,10 +232,7 @@ class SAD(AmigaDebugger):
         self.go(addr)
         return
     def _get_context_frame(self):
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['GET_CONTEXT_FRAME'])
         self.serial.flush()
         ack = self.serial.read(2)
@@ -288,10 +254,7 @@ class SAD(AmigaDebugger):
             addr = ctx + self.SAD_PC
         return addr
     def getreg(self, reg):
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         reg = reg.lower()
         if not self.isreg(reg):
             raise ValueError("Bad register name.")
@@ -301,10 +264,7 @@ class SAD(AmigaDebugger):
         value = self.peek32(addr)
         return value
     def setreg(self, reg, value):
-        while self.serial.in_waiting:
-            while self.serial.in_waiting:
-                self.serial.read(1)
-            time.sleep(0.002)
+        self._flush()
         reg = reg.lower()
         if not self.isreg(reg):
             raise ValueError("Bad register name.")
