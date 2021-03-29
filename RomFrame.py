@@ -10,6 +10,7 @@ class RomFrame(wx.Frame):
         self.execlib = None
         self.doslib = None
         self.snip = None
+        self.abort = threading.Event()
         self.wantclose = False
         self.busy = False
         self.done = False
@@ -74,6 +75,10 @@ class RomFrame(wx.Frame):
         self.m_status.SetInitialSize(self.m_status.GetSizeFromTextSize(self.m_version.GetTextExtent("A" * maxlen)))
         wSizer17.Add(self.m_status, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
         wSizer17.Add((0, 0), 1, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_CENTER_HORIZONTAL, 5)
+        self.m_abort = wx.Button(self, wx.ID_ANY, u"Stop", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_abort.Hide()
+        self.m_abort.Bind(wx.EVT_BUTTON, self.onAbortPressed)
+        wSizer17.Add(self.m_abort, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
         self.m_dump = wx.Button(self, wx.ID_ANY, u"Dump", wx.DefaultPosition, wx.DefaultSize, 0)
         wSizer17.Add(self.m_dump, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
         self.m_exit = wx.Button(self, wx.ID_ANY, u"Exit", wx.DefaultPosition, wx.DefaultSize, 0)
@@ -118,6 +123,7 @@ class RomFrame(wx.Frame):
             return
         if self.busy:
             self.wantclose = True
+            wx.CallAfter(self.Abort)
             return
         self.UpdateStatus("UserClose")
         self.CleanUp()
@@ -127,8 +133,21 @@ class RomFrame(wx.Frame):
         wx.CallAfter(self.UpdateStatus, "CleanUp")
         wx.CallAfter(self.CleanUp)
         return
+    def onAbortPressed(self, event):
+        self.Abort()
+        return
+    def Abort(self):
+        self.m_abort.Enable(False)
+        self.abort.set()
+        return
     def onDumpPressed(self, event):
         self.Enablement(False)
+        self.abort.clear()
+        self.busy = True
+        self.m_abort.Enable(True)
+        self.m_dump.Hide()
+        self.m_abort.Show()
+        self.Layout()
         self.UpdateStatus("Start")
         localpath = self.m_target.GetPath()
         debug = False
@@ -180,6 +199,11 @@ class RomFrame(wx.Frame):
             romdump += blockdump
             wx.CallAfter(self.UpdateProgressValue, block)
             block += 1
+            if self.abort.is_set():
+                wx.CallAfter(self.UpdateStatus, "UserStop.")
+                print("\nUser stopped.")
+                wx.CallAfter(self.Stop)
+                return
         wx.CallAfter(self.UpdateStatus, "Write")
         with open(localpath, "wb") as fh:
             fh.write(romdump)
@@ -189,7 +213,16 @@ class RomFrame(wx.Frame):
         return
     def Stop(self):
         self.busy = False
-        wx.CallAfter(self.UpdateProgressDone)
+        self.m_abort.Hide()
+        self.m_dump.Show()
+        self.Layout()
+        if self.abort.is_set():
+            wx.CallAfter(self.UpdateProgressValue, 0)
+        else:
+            wx.CallAfter(self.UpdateProgressDone)
+        if self.wantclose:
+            self.UpdateStatus("UserClose")
+            self.CleanUp()
         self.Enablement(True)
         return
     def RomSetup(self, endcallback, ser, amiga, execlib, snip):
@@ -201,6 +234,7 @@ class RomFrame(wx.Frame):
         self.execlib = execlib
         self.snip = snip
         self.done = False
+        self.wantclose = False
         threading.Thread(target=self.RomSetupWorker).start()
         return
     def RomSetupWorker(self):
@@ -213,10 +247,11 @@ class RomFrame(wx.Frame):
         self.m_revision.ChangeValue(f"{self.romutil.getrevision()}")
         self.m_addr.ChangeValue(f"{self.romutil.getaddr():x}")
         self.m_size.ChangeValue(f"{self.romutil.getsize():x}")
+        wx.CallAfter(self.UpdateProgressValue, 0)
         wx.CallAfter(self.UpdateStatus, "Ready.")
         wx.CallAfter(self.Enablement, True)
-        #self.Unbind(wx.EVT_CLOSE, handler=self.onCloseSetup)
-        #self.Bind(wx.EVT_CLOSE, self.onClose)
+        self.Unbind(wx.EVT_CLOSE, handler=self.onCloseSetup)
+        self.Bind(wx.EVT_CLOSE, self.onClose)
         return
     def CleanUp(self):
         self.Enablement(False)
