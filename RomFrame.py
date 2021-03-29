@@ -14,7 +14,7 @@ class RomFrame(wx.Frame):
         self.wantclose = False
         self.busy = False
         self.done = False
-        self.stepsize = 0x2000
+        self.stepsize = 0x4000
         super().__init__(None, id=wx.ID_ANY, title=u"amigaXfer ROM Tool", pos=wx.DefaultPosition, size=wx.Size(400, 250), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DLIGHT))
