@@ -14,7 +14,7 @@ class DosFrame(wx.Frame):
         self.snip = None
         self.wantclose = False
         self.busy = False
-        self.bufsize = 0x8000
+        self.bufsize = 0x10000
         self.bufaddr = None
         self.delay = 0
         self.delaydisk = 200
