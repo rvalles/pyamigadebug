@@ -192,13 +192,12 @@ class RomFrame(wx.Frame):
         blocks = length / self.stepsize
         wx.CallAfter(self.UpdateProgressRange, blocks)
         block = 0
-        wx.CallAfter(self.UpdateProgressValue, block)
         for addr in range(romaddr, romaddr+length, self.stepsize):
             wx.CallAfter(self.UpdateStatus, f"{addr:x}")
-            print(f"Dump + verify {hex(self.stepsize)} bytes at {hex(addr)}.", end='\r', flush=True)
+            wx.CallAfter(self.UpdateProgressValue, block)
+            print(f"read+crc size: {hex(self.stepsize)}, addr: {hex(addr)}.", end='\r', flush=True)
             blockdump = self.snip.verifiedreadmem(addr, self.stepsize)
             romdump += blockdump
-            wx.CallAfter(self.UpdateProgressValue, block)
             block += 1
             if self.abort.is_set():
                 wx.CallAfter(self.UpdateStatus, "UserStop.")
