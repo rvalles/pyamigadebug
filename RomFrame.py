@@ -195,6 +195,7 @@ class RomFrame(wx.Frame):
         wx.CallAfter(self.UpdateProgressValue, block)
         for addr in range(romaddr, romaddr+length, self.stepsize):
             wx.CallAfter(self.UpdateStatus, f"{addr:x}")
+            print(f"Dump + verify {hex(self.stepsize)} bytes at {hex(addr)}.", end='\r', flush=True)
             blockdump = self.snip.verifiedreadmem(addr, self.stepsize)
             romdump += blockdump
             wx.CallAfter(self.UpdateProgressValue, block)
@@ -205,9 +206,11 @@ class RomFrame(wx.Frame):
                 wx.CallAfter(self.Stop)
                 return
         wx.CallAfter(self.UpdateStatus, "Write")
+        print(f"\nWriting ROM dump to {localpath}.")
         with open(localpath, "wb") as fh:
             fh.write(romdump)
         self.done = True
+        print("Done.")
         wx.CallAfter(self.UpdateStatus, "Done.")
         wx.CallAfter(self.Stop)
         return
