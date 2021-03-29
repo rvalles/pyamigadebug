@@ -246,7 +246,7 @@ class RomFrame(wx.Frame):
         self.m_version.ChangeValue(f"{self.romutil.getversion()}")
         self.m_revision.ChangeValue(f"{self.romutil.getrevision()}")
         self.m_addr.ChangeValue(f"{self.romutil.getaddr():x}")
-        self.m_size.ChangeValue(f"{self.romutil.getsize():x}")
+        self.m_size.ChangeValue(f"{self.romutil.getsize()//1024}K")
         wx.CallAfter(self.UpdateProgressValue, 0)
         wx.CallAfter(self.UpdateStatus, "Ready.")
         wx.CallAfter(self.Enablement, True)
