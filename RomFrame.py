@@ -206,13 +206,13 @@ class RomFrame(wx.Frame):
     def RomSetupWorker(self):
         romutil = RomUtils(debugger=self.amiga)
         self.romutil = romutil
-        self.m_version.ChangeValue(f"{romutil.getversion()}")
-        self.m_revision.ChangeValue(f"{romutil.getrevision()}")
-        self.m_addr.ChangeValue(f"{romutil.getaddr():x}")
-        self.m_size.ChangeValue(f"{romutil.getsize():x}")
         wx.CallAfter(self.RomSetupDone)
         return
     def RomSetupDone(self):
+        self.m_version.ChangeValue(f"{self.romutil.getversion()}")
+        self.m_revision.ChangeValue(f"{self.romutil.getrevision()}")
+        self.m_addr.ChangeValue(f"{self.romutil.getaddr():x}")
+        self.m_size.ChangeValue(f"{self.romutil.getsize():x}")
         wx.CallAfter(self.UpdateStatus, "Ready.")
         wx.CallAfter(self.Enablement, True)
         #self.Unbind(wx.EVT_CLOSE, handler=self.onCloseSetup)
