@@ -20,7 +20,7 @@ class FloppyFrame(wx.Frame):
         self.busy = False
         self.drives = 4 #maximum we test for
         self.timerperiod = 50
-        super().__init__(None, id=wx.ID_ANY, title=u"amigaXfer floppy tool", pos=wx.DefaultPosition, size=wx.Size(450, 310), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+        super().__init__(None, id=wx.ID_ANY, title=u"amigaXfer floppy tool", pos=wx.DefaultPosition, size=wx.Size(450, 340), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DLIGHT))
         bSizer1 = wx.BoxSizer(wx.VERTICAL)
@@ -60,6 +60,9 @@ class FloppyFrame(wx.Frame):
         bSizer5.Add(wSizer102, 1, wx.ALL | wx.ALIGN_RIGHT, 5)
         wSizer7.Add(bSizer5, 0, wx.ALL, 5)
         bSizer1.Add(wSizer7, 0, wx.ALL | wx.EXPAND, 5)
+        self.m_progress = wx.Gauge(self, wx.ID_ANY, 100, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL | wx.GA_SMOOTH)
+        self.m_progress.SetValue(0)
+        bSizer1.Add(self.m_progress, 0, wx.ALL | wx.EXPAND, 5)
         wSizer16 = wx.WrapSizer(wx.HORIZONTAL, 0)
         self.m_crcmsg = wx.StaticText(self, wx.ID_ANY, u"Last CRC", wx.DefaultPosition, wx.DefaultSize, 0)
         self.m_crcmsg.Wrap(-1)
@@ -192,6 +195,19 @@ class FloppyFrame(wx.Frame):
     def UpdateStatus(self, status):
         self.m_status.ChangeValue(status)
         return
+    def UpdateProgressValue(self, value):
+        self.m_progress.SetValue(value)
+        return
+    def UpdateProgressRange(self, value):
+        self.m_progress.SetRange(value)
+        return
+    def UpdateProgressPulse(self):
+        self.m_progress.Pulse()
+        return
+    def UpdateProgressDone(self):
+        maxval = self.m_progress.GetRange()
+        self.m_progress.SetValue(maxval)
+        return
     def UpdateTrack(self, cyl, side, status):
         self.m_status.ChangeValue(status)
         self.m_cyl.ChangeValue(f'{cyl:02}')
@@ -213,6 +229,7 @@ class FloppyFrame(wx.Frame):
         self.m_status.ChangeValue(u'Setup')
         return
     def XferSetupWorker(self):
+        wx.CallAfter(self.UpdateProgressValue, 0)
         wx.CallAfter(self.UpdateStatus, "Buffer")
         self.trackbuffer = self._getbuffer(self.tracksize)
         self.drives = self._initdrives(self.drives)
@@ -384,8 +401,10 @@ class FloppyFrame(wx.Frame):
         threading.Thread(target=self.Adf2DiskWorker, args=(drive, diskdump, verify)).start()
     #Verify 0:None/1:CRCxfer/2:CRCread/3:BothPointless.
     def Adf2DiskWorker(self, drive, diskdump, verify):
+        wx.CallAfter(self.UpdateProgressRange, 159)
         self.fxio.setioreq(self.getioreq(drive))
         for track in range(0, 160):
+            wx.CallAfter(self.UpdateProgressValue, track)
             cyl = track // 2
             side = track % 2
             print(f'Writing   Cyl:{cyl:02} Side:{side}', end='\r', flush=True)
@@ -432,6 +451,7 @@ class FloppyFrame(wx.Frame):
                 return
         if verify & 2:
             for track in range(0, 160):
+                wx.CallAfter(self.UpdateProgressValue, 159-track)
                 cyl = track // 2
                 side = track % 2
                 print(f'Verifying Cyl:{cyl:02} Side:{side}', end='\r', flush=True)
@@ -482,8 +502,10 @@ class FloppyFrame(wx.Frame):
             return
         threading.Thread(target=self.CompareDiskAdfWorker, args=(drive, diskdump)).start()
     def CompareDiskAdfWorker(self, drive, diskdump):
+        wx.CallAfter(self.UpdateProgressRange, 159)
         self.fxio.setioreq(self.getioreq(drive))
         for track in range(0, 160):
+            wx.CallAfter(self.UpdateProgressValue, track)
             cyl = track // 2
             side = track % 2
             print(f'Comparing Cyl:{cyl:02} Side:{side}', end='\r', flush=True)
@@ -563,9 +585,11 @@ class FloppyFrame(wx.Frame):
         threading.Thread(target=self.Disk2AdfWorker, args=(drive, adf, verify)).start()
         return
     def Disk2AdfWorker(self, drive, adf, verify):
+        wx.CallAfter(self.UpdateProgressRange, 159)
         diskdump = bytearray()
         self.fxio.setioreq(self.getioreq(drive))
         for track in range(0, 160):
+            wx.CallAfter(self.UpdateProgressValue, track)
             cyl = track // 2
             side = track % 2
             if self.abort.is_set():
