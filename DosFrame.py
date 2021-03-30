@@ -165,7 +165,7 @@ class DosFrame(wx.Frame):
         if not self.doslib.Info(lock, self.bufaddr):
             print("Could not Info() lock.")
             self.doslib.UnLock(lock)
-            wx.CallAfter(self.UpdateStatus, "InfoErr")
+            wx.CallAfter(self.UpdateStatus, "InfoErr.")
             wx.CallAfter(self.Stop)
             return
         self.doslib.UnLock(lock)
@@ -192,7 +192,7 @@ class DosFrame(wx.Frame):
             if not self.doslib.Examine(lock, self.bufaddr):
                 print("Could not Examine() lock.")
                 self.doslib.UnLock(lock)
-                wx.CallAfter(self.UpdateStatus, "ExamErr")
+                wx.CallAfter(self.UpdateStatus, "ExamErr.")
                 wx.CallAfter(self.Stop)
                 return
             self.doslib.UnLock(lock)
