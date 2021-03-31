@@ -39,7 +39,7 @@ class DosFrame(wx.Frame):
         self.m_localpathmsg = wx.StaticText(self, wx.ID_ANY, u"Local path", wx.DefaultPosition, wx.DefaultSize, 0)
         self.m_localpathmsg.Wrap(-1)
         bSizer7.Add(self.m_localpathmsg, 0, wx.ALL, 5)
-        self.m_localpath = wx.FilePickerCtrl(self, wx.ID_ANY, wx.EmptyString, u"Select a file", u"", wx.DefaultPosition, wx.DefaultSize, wx.FLP_OPEN|wx.FLP_USE_TEXTCTRL)
+        self.m_localpath = wx.FilePickerCtrl(self, wx.ID_ANY, wx.EmptyString, u"Select a file", u"", wx.DefaultPosition, wx.DefaultSize, wx.FLP_OPEN | wx.FLP_USE_TEXTCTRL)
         bSizer7.Add(self.m_localpath, 0, wx.ALL | wx.EXPAND, 5)
         self.m_staticline2 = wx.StaticLine(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL)
         bSizer7.Add(self.m_staticline2, 0, wx.EXPAND | wx.ALL, 5)
@@ -154,7 +154,7 @@ class DosFrame(wx.Frame):
             wx.CallAfter(self.UpdateStatus, "SrcFile?")
             wx.CallAfter(self.Stop)
             return
-        voladdr = self.snip.getaddrstr(vol+':')
+        voladdr = self.snip.getaddrstr(vol + ':')
         lock = self.doslib.Lock(voladdr, self.doslib.ACCESS_READ)
         if not lock:
             print("Could not get read lock on volume.")
@@ -168,7 +168,7 @@ class DosFrame(wx.Frame):
             wx.CallAfter(self.Stop)
             return
         self.doslib.UnLock(lock)
-        diskstate = self.amiga.speek32(self.bufaddr+self.doslib.id_DiskState)
+        diskstate = self.amiga.speek32(self.bufaddr + self.doslib.id_DiskState)
         print(f"DiskState: {hex(diskstate)}.")
         if diskstate == self.doslib.ID_WRITE_PROTECTED:
             print(f"Disk state ID_WRITE_PROTECTED thus not writable.")
@@ -195,14 +195,14 @@ class DosFrame(wx.Frame):
                 wx.CallAfter(self.Stop)
                 return
             self.doslib.UnLock(lock)
-            filetype = self.amiga.speek32(self.bufaddr+self.doslib.fib_DirEntryType)
+            filetype = self.amiga.speek32(self.bufaddr + self.doslib.fib_DirEntryType)
             print(f"Filetype: {filetype}")
-            if (filetype<0) and (not overwrite):
+            if (filetype < 0) and (not overwrite):
                 print("File exists, and overwrite is not enabled.")
                 wx.CallAfter(self.UpdateStatus, "OverWrit?")
                 wx.CallAfter(self.Stop)
                 return
-            if filetype>0:
+            if filetype > 0:
                 basename = os.path.basename(localpath)
                 if amigapath[-1] != ":":
                     amigapath += "/"
@@ -218,9 +218,9 @@ class DosFrame(wx.Frame):
                         wx.CallAfter(self.Stop)
                         return
                     self.doslib.UnLock(lock)
-                    filetype = self.amiga.speek32(self.bufaddr+self.doslib.fib_DirEntryType)
+                    filetype = self.amiga.speek32(self.bufaddr + self.doslib.fib_DirEntryType)
                     print(f"Filetype: {filetype}")
-                    if filetype>0:
+                    if filetype > 0:
                         print("Target directory exists, but name inside exists and is not a file.")
                         print(f"path: {localpath}")
                         wx.CallAfter(self.UpdateStatus, "LNotFile?")
@@ -330,7 +330,7 @@ class DosFrame(wx.Frame):
             wx.CallAfter(self.Stop)
             return
         self.doslib.UnLock(lock)
-        length = self.amiga.peek32(self.bufaddr+self.doslib.fib_Size)
+        length = self.amiga.peek32(self.bufaddr + self.doslib.fib_Size)
         print(f"Source file length: {length}")
         dosfh = self.doslib.Open(amigapathaddr, self.doslib.MODE_OLDFILE)
         if not dosfh:
@@ -402,16 +402,16 @@ class DosFrame(wx.Frame):
     def DosSetupWorker(self):
         wx.CallAfter(self.UpdateStatus, "Buffer")
         avail = self.execlib.AvailMem(self.execlib.MEMF_PUBLIC)
-        largest = self.execlib.AvailMem(self.execlib.MEMF_LARGEST|self.execlib.MEMF_PUBLIC)
+        largest = self.execlib.AvailMem(self.execlib.MEMF_LARGEST | self.execlib.MEMF_PUBLIC)
         print(f"MEMF_PUBLIC avail {hex(avail)}, largest {hex(largest)}")
-        if avail > 1024*1024*2 and largest >= 256*1024:
-            self.bufsize = 256*1024
-        elif avail > 1024*1024 and largest >= 128*1024:
-            self.bufsize = 128*1024
-        elif avail > 512*1024 and largest >= 64*1024:
-            self.bufsize = 64*1024
-        elif avail > 256*1024 and largest >= 16*1024:
-            self.bufsize = 16*1024
+        if avail > 1024 * 1024 * 2 and largest >= 256 * 1024:
+            self.bufsize = 256 * 1024
+        elif avail > 1024 * 1024 and largest >= 128 * 1024:
+            self.bufsize = 128 * 1024
+        elif avail > 512 * 1024 and largest >= 64 * 1024:
+            self.bufsize = 64 * 1024
+        elif avail > 256 * 1024 and largest >= 16 * 1024:
+            self.bufsize = 16 * 1024
         elif largest > 4096:
             self.bufsize = 4096
         else:
