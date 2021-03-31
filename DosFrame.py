@@ -14,7 +14,6 @@ class DosFrame(wx.Frame):
         self.snip = None
         self.wantclose = False
         self.busy = False
-        self.bufsize = 0x10000
         self.bufaddr = None
         self.delay = 0
         self.delaydisk = 200
@@ -402,6 +401,24 @@ class DosFrame(wx.Frame):
         return
     def DosSetupWorker(self):
         wx.CallAfter(self.UpdateStatus, "Buffer")
+        avail = self.execlib.AvailMem(self.execlib.MEMF_PUBLIC)
+        largest = self.execlib.AvailMem(self.execlib.MEMF_LARGEST|self.execlib.MEMF_PUBLIC)
+        print(f"MEMF_PUBLIC avail {hex(avail)}, largest {hex(largest)}")
+        if avail > 1024*1024*2 and largest >= 256*1024:
+            self.bufsize = 256*1024
+        elif avail > 1024*1024 and largest >= 128*1024:
+            self.bufsize = 128*1024
+        elif avail > 512*1024 and largest >= 64*1024:
+            self.bufsize = 64*1024
+        elif avail > 256*1024 and largest >= 16*1024:
+            self.bufsize = 16*1024
+        elif largest > 4096:
+            self.bufsize = 4096
+        else:
+            print("RAM is too low, bailing out")
+            wx.CallAfter(self.DosSetupFail)
+            return
+        print(f"Allocating bufsize {hex(self.bufsize)}")
         self.bufaddr = self.execlib.AllocMem(self.bufsize, self.execlib.MEMF_PUBLIC)
         dosname = self.snip.getaddrstr("dos.library")
         self.dosbase = self.execlib.OldOpenLibrary(dosname)
@@ -410,6 +427,9 @@ class DosFrame(wx.Frame):
         self.doslib = DosLibrary(debugger=self.amiga, base=self.dosbase)
         self.dosutil = DosUtils(debugger=self.amiga, execlib=self.execlib, doslib=self.doslib, snippets=self.snip)
         wx.CallAfter(self.DosSetupDone)
+        return
+    def DosSetupFail(self):
+        wx.CallAfter(self.endcallback)
         return
     def DosSetupDone(self):
         wx.CallAfter(self.UpdateStatus, "Ready.")
