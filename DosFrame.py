@@ -192,12 +192,12 @@ class DosFrame(wx.Frame):
         diskstate = self.amiga.speek32(self.bufaddr + self.doslib.id_DiskState)
         print(f"DiskState: {hex(diskstate)}.")
         if diskstate == self.doslib.ID_WRITE_PROTECTED:
-            print(f"Disk state ID_WRITE_PROTECTED thus not writable.")
+            print("Disk state ID_WRITE_PROTECTED thus not writable.")
             wx.CallAfter(self.UpdateStatus, "WriteProt?")
             wx.CallAfter(self.Stop)
             return
         if diskstate == self.doslib.ID_VALIDATING:
-            print(f"Disk state ID_VALIDATING thus not writable.")
+            print("Disk state ID_VALIDATING thus not writable.")
             wx.CallAfter(self.UpdateStatus, "DskInval?")
             wx.CallAfter(self.Stop)
             return
@@ -274,7 +274,7 @@ class DosFrame(wx.Frame):
             wx.CallAfter(self.UpdateStatus, "Write")
             returnedLength = self.doslib.Write(dosfh, self.bufaddr, stepsize)
             if returnedLength != stepsize:
-                print(f"Error: size written != requested length.")
+                print("Error: size written != requested length.")
                 wx.CallAfter(self.UpdateStatus, "IOErr.")
                 success = self.doslib.Close(dosfh)
                 wx.CallAfter(self.Stop)
@@ -371,7 +371,7 @@ class DosFrame(wx.Frame):
             stepsize = min(remaining, self.bufsize)
             actualLength = self.doslib.Read(dosfh, self.bufaddr, self.bufsize)
             if actualLength != stepsize:
-                print("Error reading file.")
+                print("Error: size read != requested length.")
                 self.doslib.Close(dosfh)
                 wx.CallAfter(self.UpdateStatus, "IOErr.")
                 wx.CallAfter(self.Stop)
@@ -438,7 +438,7 @@ class DosFrame(wx.Frame):
         elif largest > 4096:
             self.bufsize = 4096
         else:
-            print("RAM is too low, bailing out")
+            print("RAM is too low, bailing out.")
             wx.CallAfter(self.DosSetupFail)
             return
         print(f"Allocating bufsize {hex(self.bufsize)}")
