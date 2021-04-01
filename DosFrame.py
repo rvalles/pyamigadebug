@@ -403,7 +403,7 @@ class DosFrame(wx.Frame):
         wx.CallAfter(self.UpdateStatus, "Buffer")
         avail = self.execlib.AvailMem(self.execlib.MEMF_PUBLIC)
         largest = self.execlib.AvailMem(self.execlib.MEMF_LARGEST | self.execlib.MEMF_PUBLIC)
-        print(f"MEMF_PUBLIC avail {hex(avail)}, largest {hex(largest)}")
+        print(f"MEMF_PUBLIC avail: {hex(avail)}, largest: {hex(largest)}")
         if avail > 1024 * 1024 * 2 and largest >= 256 * 1024:
             self.bufsize = 256 * 1024
         elif avail > 1024 * 1024 and largest >= 128 * 1024:
