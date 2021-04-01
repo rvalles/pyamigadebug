@@ -146,6 +146,7 @@ class DosFrame(wx.Frame):
             self.Enablement(True)
         return
     def ToAmigaWorker(self, localpath, amigapath, overwrite):
+        wx.CallAfter(self.UpdateProgressPulse)
         if not amigapath:
             wx.CallAfter(self.UpdateStatus, "DstFile?")
             wx.CallAfter(self.Stop)
