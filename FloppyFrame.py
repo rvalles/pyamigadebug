@@ -222,8 +222,8 @@ class FloppyFrame(wx.Frame):
         self.amiga = amiga
         self.execlib = execlib
         self.snip = snip
-        self.timer = wx.Timer(self)
         self.wantclose = False
+        self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
         threading.Thread(target=self.XferSetupWorker).start()
         self.m_status.ChangeValue(u'Setup')
