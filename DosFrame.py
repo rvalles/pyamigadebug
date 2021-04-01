@@ -1,6 +1,7 @@
 import wx
 import os
 import re
+import time
 import threading
 from DosLibrary import DosLibrary
 from DosUtils import DosUtils
@@ -17,7 +18,8 @@ class DosFrame(wx.Frame):
         self.bufaddr = None
         self.delay = 0
         self.delaydisk = 200
-        super().__init__(None, id=wx.ID_ANY, title=u"amigaXfer DOS Tool", pos=wx.DefaultPosition, size=wx.Size(500, 300), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+        self.timerperiod = 50
+        super().__init__(None, id=wx.ID_ANY, title=u"amigaXfer DOS Tool", pos=wx.DefaultPosition, size=wx.Size(600, 300), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DLIGHT))
         bSizer7 = wx.BoxSizer(wx.VERTICAL)
@@ -54,10 +56,19 @@ class DosFrame(wx.Frame):
         self.m_overwrite = wx.CheckBox(self, wx.ID_ANY, u"Overwrite", wx.DefaultPosition, wx.DefaultSize, 0)
         self.m_overwrite.SetForegroundColour(wx.Colour(255, 0, 0))
         wSizer10.Add(self.m_overwrite, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
-        gSizer1.Add(wSizer10, 0, wx.EXPAND, 5)
+        wSizer10.Add((0, 0), 1, wx.EXPAND, 5)
+        self.m_timermsg = wx.StaticText(self, wx.ID_ANY, u"Time", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_timermsg.Wrap(-1)
+        wSizer10.Add(self.m_timermsg, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
+        self.m_timer = wx.TextCtrl(self, wx.ID_ANY, u"   0.0s", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY)
+        self.m_timer.SetFont(wx.Font(wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, wx.EmptyString))
+        maxlen = 7
+        self.m_timer.SetMaxLength(maxlen)
+        self.m_timer.SetInitialSize(self.m_timer.GetSizeFromTextSize(self.m_timer.GetTextExtent("A" * maxlen)))
+        wSizer10.Add(self.m_timer, 0, wx.ALL, 5)
         self.m_exit = wx.Button(self, wx.ID_ANY, u"Exit", wx.DefaultPosition, wx.DefaultSize, 0)
-        gSizer1.Add(self.m_exit, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
-        bSizer7.Add(gSizer1, 0, wx.EXPAND, 5)
+        wSizer10.Add(self.m_exit, 0, wx.ALL | wx.ALIGN_RIGHT, 5)
+        bSizer7.Add(wSizer10, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALIGN_CENTER_VERTICAL, 5)
         self.SetSizer(bSizer7)
         self.Layout()
         self.Centre(wx.BOTH)
@@ -80,6 +91,10 @@ class DosFrame(wx.Frame):
             return
         self.UpdateStatus("UserClose")
         self.CleanUp()
+        return
+    def onTimer(self, event):
+        value = time.monotonic() - self.timerbase
+        self.m_timer.ChangeValue(f"{value:6.1F}s")
         return
     def onExitPressed(self, event):
         self.wantclose = True
@@ -106,6 +121,8 @@ class DosFrame(wx.Frame):
         localpath = self.m_localpath.GetPath()
         amigapath = self.m_amigapath.GetValue()
         overwrite = self.m_overwrite.GetValue()
+        self.timerbase = time.monotonic()
+        self.timer.Start(self.timerperiod)
         threading.Thread(target=self.ToAmigaWorker, args=(localpath, amigapath, overwrite)).start()
         return
     def onFromAmigaPressed(self, event):
@@ -114,10 +131,13 @@ class DosFrame(wx.Frame):
         localpath = self.m_localpath.GetPath()
         amigapath = self.m_amigapath.GetValue()
         overwrite = self.m_overwrite.GetValue()
+        self.timerbase = time.monotonic()
+        self.timer.Start(self.timerperiod)
         threading.Thread(target=self.FromAmigaWorker, args=(localpath, amigapath, overwrite)).start()
         return
     def Stop(self):
         self.doslib.Delay(self.delay)
+        self.timer.Stop()
         self.busy = False
         wx.CallAfter(self.UpdateProgressDone)
         if self.wantclose:
@@ -397,6 +417,8 @@ class DosFrame(wx.Frame):
         self.amiga = amiga
         self.execlib = execlib
         self.snip = snip
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
         threading.Thread(target=self.DosSetupWorker).start()
         return
     def DosSetupWorker(self):
