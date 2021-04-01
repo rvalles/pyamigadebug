@@ -1,5 +1,6 @@
 import wx
 import os
+import time
 import threading
 from RomUtils import RomUtils
 class RomFrame(wx.Frame):
@@ -14,8 +15,9 @@ class RomFrame(wx.Frame):
         self.wantclose = False
         self.busy = False
         self.done = False
-        self.stepsize = 0x4000
-        super().__init__(None, id=wx.ID_ANY, title=u"amigaXfer ROM Tool", pos=wx.DefaultPosition, size=wx.Size(400, 250), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+        self.stepsize = 0x8000
+        self.timerperiod = 50
+        super().__init__(None, id=wx.ID_ANY, title=u"amigaXfer ROM Tool", pos=wx.DefaultPosition, size=wx.Size(500, 250), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DLIGHT))
         bSizer10 = wx.BoxSizer(wx.VERTICAL)
@@ -75,6 +77,15 @@ class RomFrame(wx.Frame):
         self.m_status.SetInitialSize(self.m_status.GetSizeFromTextSize(self.m_version.GetTextExtent("A" * maxlen)))
         wSizer17.Add(self.m_status, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
         wSizer17.Add((0, 0), 1, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_CENTER_HORIZONTAL, 5)
+        self.m_timermsg = wx.StaticText(self, wx.ID_ANY, u"Time", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_timermsg.Wrap(-1)
+        wSizer17.Add(self.m_timermsg, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
+        self.m_timer = wx.TextCtrl(self, wx.ID_ANY, u"   0.0s", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY)
+        self.m_timer.SetFont(wx.Font(wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, wx.EmptyString))
+        maxlen = 7
+        self.m_timer.SetMaxLength(maxlen)
+        self.m_timer.SetInitialSize(self.m_timer.GetSizeFromTextSize(self.m_timer.GetTextExtent("A" * maxlen)))
+        wSizer17.Add(self.m_timer, 0, wx.ALL, 5)
         self.m_abort = wx.Button(self, wx.ID_ANY, u"Stop", wx.DefaultPosition, wx.DefaultSize, 0)
         self.m_abort.Hide()
         self.m_abort.Bind(wx.EVT_BUTTON, self.onAbortPressed)
@@ -127,6 +138,10 @@ class RomFrame(wx.Frame):
             return
         self.UpdateStatus("UserClose")
         self.CleanUp()
+        return
+    def onTimer(self, event):
+        value = time.monotonic() - self.timerbase
+        self.m_timer.ChangeValue(f"{value:6.1F}s")
         return
     def onExitPressed(self, event):
         self.wantclose = True
@@ -183,6 +198,8 @@ class RomFrame(wx.Frame):
                 wx.CallAfter(self.Stop)
                 return
         self.busy = True
+        self.timerbase = time.monotonic()
+        self.timer.Start(self.timerperiod)
         threading.Thread(target=self.DumpWorker, args=(localpath, debug)).start()
         return
     def DumpWorker(self, localpath, debug):
@@ -214,6 +231,7 @@ class RomFrame(wx.Frame):
         wx.CallAfter(self.Stop)
         return
     def Stop(self):
+        self.timer.Stop()
         self.busy = False
         self.m_abort.Hide()
         self.m_dump.Show()
@@ -237,6 +255,8 @@ class RomFrame(wx.Frame):
         self.snip = snip
         self.done = False
         self.wantclose = False
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
         threading.Thread(target=self.RomSetupWorker).start()
         return
     def RomSetupWorker(self):
