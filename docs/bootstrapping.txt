@@ -1,0 +1,54 @@
+amigaXfer uses the debugger that is present in kickstart ROMs.
+
+If you have a bootable Amiga floppy, just use Workbench's debug menu, present when wb is loaded using `loadwb -debug`, or any other method described in the README.
+
+This document describes a far more involved method which allows access to the debugger without having a bootable Amiga floppy.
+
+Further up-to-date explanation on the method can be found here:
+https://www.rvalles.net/bootstrapping-an-amiga-without-a-bootable-amiga-floppy.html
+
+This document is a shorter copy included in the archive to facilitate offline use.
+
+### Requirements
+* An Amiga in good condition.
+* If the Amiga is an A1000, the kickstart will have to be loaded first.
+* AmigaXfer itself does work with AmigaOS 1.x/2.x/3.x, but this last-resort alternative bootstrap method has only been tested on 34.5 (1.3).
+* A supported platform running **amigaXfer**.
+* A null-modem serial cable or an USB <-> RS-232 adapter, connecting both computers together. Only three wires will be used: GND<>GND straight and RX<>TX crossed.
+* A few blank floppies, verified to be good e.g. by a verified formatting done on another computer. DD is preferable over HD.
+* ADF images of any desired floppies to be written (e.g. Workbench and Extras floppies matching the kickstart version).
+* A piece of wire or, if pressed, a paperclip.
+* Steady hands that won't connect elsewhere than necessary.
+***
+### How it is done
+
+>These instructions are provided as-is, without express or implied liability.
+>Follow under your own responsibility, and only after understanding them whole.
+
+>**If bootable Amiga floppies are available, there are far easier methods to enter the debugger and use amigaXfer, such as the trivial loadwb -debug method.**
+
+Unplug unnecessary external expansions (such as those attached to the left expansion port on A500).
+
+Open the Amiga and locate a GND and the BERR signal.
+
+See the included a500_berr.png
+
+BERR, marked in orange, is a pin on 68000's socket, so it is possible to just touch the top of 68000's leg for the purpose.
+
+There's a large GND marked in blue on the left expansion header, useful to hold a wire against.
+
+For paperclip convenience, a GND pin that is close to BERR is also highlighted in blue.
+
+Turn Amiga on, without a floppy inserted. Wait for the video output to show the Workbench prompt. If no floppy is present, the floppy drive should now begin to make clicking noises.
+
+Select CrashEntry on amigaXfer, and click connect. LogWindow is recommended to be left on, in order to easily follow what is going on.
+
+Calmly connect BERR into GND for just an instant. If contact lasts for too long, it may require a reboot (Control-Amiga-Amiga) and retry.
+
+Once the brief connection is properly executed, the Amiga will reboot to a white screen and amigaxfer's log window will fill with output. If all goes well, amigaXfer's main menu will pop up after a few seconds. 
+
+As the speed of the serial port is locked at 9600 for the bootstrap case, it is recommended to now use the Bootblock Tool to install a debug bootblock into one or more floppies. Tick the Format checkbox, as the floppies aren't necessarily Amiga formatted to begin with. Write protect the floppy and exit. The Amiga will reboot normally.
+
+Amiga should be able to boot this floppy, and normal (non-CrashEntry) usage of amigaXfer should be possible at this point. This means fast transfer speeds are available, as fast as 512kbit/s on a plain A500, therefore writing floppies from images should be fast.
+
+Once a Workbench floppy has been written, the loadwb -debug method can be used to enter amigaXfer thereon, thus this last-resort BERR-based bootstrap method should not be needed again.

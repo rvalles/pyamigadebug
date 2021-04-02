@@ -1,15 +1,15 @@
 This is an "optionally Debug()" bootblock.
 
-Normally, this bootblock will mostly behave as the standard-ish AmigaDOS bootblock, except:
-* Disables audio filter (dims power led).
-* Installs Debug() as NMI server.
+Normally, this bootblock will mostly behave as the standard-ish AmigaDOS bootblock, except it also will:
+* Disable audio filter (dims power led).
+* Install Debug() as NMI server.
 
-But, if there's serial input or the right mouse button is held, this bootblock:
+But, if there's serial input or the right mouse button is held, this bootblock will instead:
 * Calls execlib->Debug().
-* Then returns without doing anything else.
+* Then return without doing anything else.
 
 Thus, from the debugger, it is possible to take over or to just return and boot normally.
-For the latter, registers would need to be setup as if a standard bootblock had ran.
-That means, d0 should be 0 and a0 should contain the same pointer as dos.library's romtag rt_Init.
+
+For the latter, registers would need to be setup as if a standard bootblock had run. This means, d0 should be 0 and a0 should contain the same pointer as dos.library's romtag rt_Init.
 
 Hold left mouse button to always boot normally.

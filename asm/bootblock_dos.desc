@@ -1,4 +1,5 @@
 Standard-ish AmigaDOS bootblock.
 
-Opening expansion.library is attempted, as newer kickstarts do.
-The ioreq in a1 is restored by the end, thus still allowing very old kickstarts to boot from it.
+Opening expansion.library is attempted on newer kickstarts.
+
+The ioreq is restored into a1 by the end, allowing very old kickstarts to boot from it.
