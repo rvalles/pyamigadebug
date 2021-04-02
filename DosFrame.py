@@ -155,6 +155,8 @@ class DosFrame(wx.Frame):
             wx.CallAfter(self.UpdateStatus, "DstVol?")
             wx.CallAfter(self.Stop)
             return
+        if amigapath[-1] == '/':
+            amigapath = amigapath[:-1]
         wx.CallAfter(self.UpdateStatus, "Checks")
         vol = amigapath.split(':')[0]
         if vol.upper() == "RAM":
@@ -288,6 +290,8 @@ class DosFrame(wx.Frame):
         return
     def FromAmigaWorker(self, localpath, amigapath, overwrite):
         wx.CallAfter(self.UpdateProgressPulse)
+        if localpath[-1] == '/' or localpath[-1] == '\\':
+            localpath = localpath[:-1]
         if not amigapath or amigapath[-1] == ':' or amigapath[-1] == '/':
             wx.CallAfter(self.UpdateStatus, "SrcFile?")
             wx.CallAfter(self.Stop)
