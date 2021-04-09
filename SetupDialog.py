@@ -102,6 +102,7 @@ class SetupDialog(wx.Frame):
         bSizer1.Add(wSizer14, 0, wx.ALIGN_RIGHT, 5)
         self.SetSizer(bSizer1)
         self.Layout()
+        self.Fit()
         self.Centre(wx.BOTH)
         self.Bind(wx.EVT_CLOSE, self.onClose)
         #FIXME: Secret tickboxes.
