@@ -24,7 +24,7 @@ class AmigaXfer(wx.App):
     def ShowAboutDialog(self):
         info = wx.adv.AboutDialogInfo()
         info.SetName("amigaXfer")
-        info.SetVersion("1.0.1")
+        info.SetVersion("1.1.0dev")
         info.SetDescription("Data transfer and tools for an Amiga on the serial port.")
         info.SetCopyright("(C) 2021 Roc Vallès i Domènech")
         wx.adv.AboutBox(info)
