@@ -283,6 +283,7 @@ class BootblockFrame(wx.Frame):
         self.amiga = amiga
         self.execlib = execlib
         self.snip = snip
+        self.wantclose = False
         threading.Thread(target=self.BootblockSetupWorker).start()
         self.m_status.ChangeValue(u'Setup')
         return

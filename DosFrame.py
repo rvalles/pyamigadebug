@@ -422,6 +422,7 @@ class DosFrame(wx.Frame):
         self.amiga = amiga
         self.execlib = execlib
         self.snip = snip
+        self.wantclose = False
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
         threading.Thread(target=self.DosSetupWorker).start()
