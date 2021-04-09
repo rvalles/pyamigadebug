@@ -29,12 +29,13 @@ class AmigaXfer(wx.App):
         info.SetCopyright("(C) 2021 Roc Vallès i Domènech")
         wx.adv.AboutBox(info)
         return
-    def SetupDialogDone(self, ser, amiga, execlib, snip, crashentry, regs):
+    def SetupDialogDone(self, ser, amiga, execlib, snip, resetfirst, crashentry, regs):
         self.setupframe.Hide()
         self.ser = ser
         self.amiga = amiga
         self.execlib = execlib
         self.snip = snip
+        self.resetfirst = resetfirst
         self.crashentry = crashentry
         self.savedregs = regs
         wx.CallAfter(self.menutool)

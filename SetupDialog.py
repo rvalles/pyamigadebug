@@ -74,8 +74,12 @@ class SetupDialog(wx.Frame):
         self.m_crashentry.SetToolTip(u"Refer to bootstrap doc")
         self.m_crashentry.Bind(wx.EVT_CHECKBOX, self.onCheckBox)
         wSizer1.Add(self.m_crashentry, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
+        self.m_resetfirst = wx.CheckBox(self, wx.ID_ANY, u"ResetFirst", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_resetfirst.SetToolTip(u"Reboots for cleaner env")
+        self.m_resetfirst.Bind(wx.EVT_CHECKBOX, self.onCheckBox)
+        wSizer1.Add(self.m_resetfirst, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
         self.m_paranoid = wx.CheckBox(self, wx.ID_ANY, u"Paranoid", wx.DefaultPosition, wx.DefaultSize, 0)
-        self.m_paranoid.SetToolTip(u"Excess CRCing (slow)")
+        self.m_paranoid.SetToolTip(u"AmigaSnippets verifyuse (slow)")
         wSizer1.Add(self.m_paranoid, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
         self.m_debug = wx.CheckBox(self, wx.ID_ANY, u"Debug", wx.DefaultPosition, wx.DefaultSize, 0)
         self.m_debug.SetToolTip(u"Extra debug text")
@@ -145,6 +149,10 @@ class SetupDialog(wx.Frame):
         self.m_about.Enable(enable)
         self.m_port.Enable(enable)
         self.m_portmsg.Enable(enable)
+        if crashentry:
+            self.m_resetfirst.Enable(False)
+        else:
+            self.m_resetfirst.Enable(enable)
         if (not crashentry) and (not dangerfast):
             self.m_baudrate.Enable(enable)
             self.m_baudratemsg.Enable(enable)
@@ -163,9 +171,12 @@ class SetupDialog(wx.Frame):
         dangerfast = self.m_dangerfast.GetValue()
         logwindow = self.m_logwindow.GetValue()
         crashentry = self.m_crashentry.GetValue()
+        resetfirst = self.m_resetfirst.GetValue()
+        if crashentry:
+            resetfirst = True
         if logwindow:
             wx.GetApp().RedirectStdio()
-        print(f'port {serialdev}, baud {baudrate}, debugger {debugger}, paranoid {paranoid}, debug {debug}, dangerfast {dangerfast}, crashentry {crashentry}')
+        print(f'port {serialdev}, baud {baudrate}, debugger {debugger}, paranoid {paranoid}, debug {debug}, dangerfast {dangerfast}, resetfirst {resetfirst}, crashentry {crashentry}')
         if crashentry:
             print("*** Crash entry mode: Refer to bootstrapping documentation.")
             print("Overriding settings for safety. Serial will run at 9600.")
@@ -187,13 +198,13 @@ class SetupDialog(wx.Frame):
                 return
         print("Serial device opened.")
         self.ser = ser
-        if crashentry:
-            threading.Thread(target=self.CrashEntryWorker, args=(baudrate, debugger, paranoid, debug, dangerfast, crashentry)).start()
+        if resetfirst:
+            threading.Thread(target=self.ResetFirstWorker, args=(baudrate, debugger, paranoid, debug, dangerfast, resetfirst, crashentry)).start()
         else:
-            threading.Thread(target=self.DebuggerConnectWorker, args=(baudrate, debugger, paranoid, debug, dangerfast, crashentry)).start()
+            threading.Thread(target=self.DebuggerConnectWorker, args=(baudrate, debugger, paranoid, debug, dangerfast, resetfirst, crashentry)).start()
         return
-    def DebuggerConnectWorker(self, baudrate, debugger, paranoid, debug, dangerfast, crashentry):
-        if crashentry:
+    def DebuggerConnectWorker(self, baudrate, debugger, paranoid, debug, dangerfast, resetfirst, crashentry):
+        if resetfirst:
             print('Syncing with debugger.')
         else:
             print('Syncing with debugger. Please have Amiga enter debugger now. Refer to README for help.')
@@ -212,7 +223,7 @@ class SetupDialog(wx.Frame):
         execlib.Disable() #romwack/sad unreliable at wire speed if interrupts on, on 000/010 7MHz.
         print("Disable.")
         savedregs = []
-        if not crashentry:
+        if not resetfirst:
             print("Saving non-scratch registers.")
             savedregs = amiga.getregs(["a2", "a3", "a4", "a5", "a6", "a7", "d2", "d3", "d4", "d5", "d6", "d7"])
         if amiga.debugger == "SAD":
@@ -254,15 +265,18 @@ class SetupDialog(wx.Frame):
         else:
             print("Bootstrapped snippets.")
         self.snip = snip
-        wx.CallAfter(self.endcallback, self.ser, self.debugger, self.execlib, self.snip, crashentry, savedregs)
+        wx.CallAfter(self.endcallback, self.ser, self.debugger, self.execlib, self.snip, resetfirst, crashentry, savedregs)
         return
-    def CrashEntryWorker(self, baudrate, debugger, paranoid, debug, dangerfast, crashentry):
+    def ResetFirstWorker(self, baudrate, debugger, paranoid, debug, dangerfast, resetfirst, crashentry):
         ser = self.ser
-        print("Waiting for Amiga to enter unrecoverable alert routine (the blink + reboot + guru sort).")
-        while not ser.in_waiting:
-            ser.write(b'\x7F')
-            time.sleep(0.3)
-        print("Amiga is alive. Attempting debugger entry.")
+        if crashentry:
+            print("Waiting for Amiga to enter unrecoverable alert routine (the blink + reboot + guru sort).")
+            while not ser.in_waiting:
+                ser.write(b'\x7F')
+                time.sleep(0.3)
+            print("Amiga is alive. Attempting debugger entry.")
+        else:
+            print('Syncing with debugger. Please have Amiga enter debugger now. Refer to README for help.')
         if debugger==0:
             amiga = RomWack(syncabort=self.syncabort, serial=self.ser, Debug=debug)
         elif debugger==1:
@@ -297,5 +311,5 @@ class SetupDialog(wx.Frame):
         print("Releasing Amiga.")
         print("If all went well, without strap, Amiga will call Debug() after resident initialization.")
         amiga.resume()
-        self.DebuggerConnectWorker(baudrate, debugger, paranoid, debug, dangerfast, crashentry)
+        self.DebuggerConnectWorker(baudrate, debugger, paranoid, debug, dangerfast, resetfirst, crashentry)
         return
