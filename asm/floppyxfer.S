@@ -201,7 +201,6 @@ cmdrecvbuffer:
     btst #14,d1 ;SERDATR RBF
     beq .loop
     move.w #$0800,132(a2) ;INTREQ RBF clear 
-    ;move.w #$0800,$dff09c ;INTREQ RBF clear
     move.b d1,(a0)+
     sub.l #1,d0
     bne .loop
