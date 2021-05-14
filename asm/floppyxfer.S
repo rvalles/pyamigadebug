@@ -151,7 +151,7 @@ cmdsetioreq:
     bra mainloop
 cmdsettrack:
     bsr recvlong
-    move.b d0,d5
+    move.l d0,d5
     bra mainloop
 cmdsetusr:
     bsr recvlong
