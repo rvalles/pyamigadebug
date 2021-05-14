@@ -210,9 +210,7 @@ cmdrecvbuffer:
 trackclear:
     move.w #CMD_CLEAR,io_Command(a1)
     move.b #0,io_Flags(a1)
-    movem.l a2-a6/d2-d6,-(sp)
     jsr _LVODoIO(a6)
-    movem.l (sp)+,a2-a6/d2-d6
     rts
 cmdtrackread:
     move.l a4,a1 ;ioreq
@@ -250,8 +248,6 @@ cmdmotoroff:
     move.l #0,io_Length(a1)
     move.l d5,io_Offset(a1)
 doio:
-    movem.l a2-a6/d2-d6,-(sp)
     jsr _LVODoIO(a6)
-    movem.l (sp)+,a2-a6/d2-d6
     bsr sendbyte ;ioerr
     bra mainloop
