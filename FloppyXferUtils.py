@@ -4,6 +4,7 @@ class FloppyXferUtils(object):
     def __init__(self, snip):
         self.snip = snip
         self.trackbuffer = self._getbuffer(self.tracksize)
+        print(f"Trackbuffer: {hex(self.trackbuffer)}")
         self.drives = 4 #maximum we test for
         self.drives = self._initdrives(self.drives)
         self.fxio = FloppyXferIO(snip) #from here, floppyxfer is running exclusively.
@@ -67,7 +68,7 @@ class FloppyXferUtils(object):
             self.fxio.settrack(track)
             ioerr = self.fxio.trackread()
             if ioerr:
-                print(f"DISK IO ERROR.")
+                print(f"DISK IO ERROR. {hex(ioerr)}")
                 raise BufferError()
             trackdump = self.fxio.recvbuffer()
             if self.fxio.callusr() != self.snip.keysum(trackdump):
@@ -95,7 +96,7 @@ class FloppyXferUtils(object):
                     raise BufferError()
             ioerr = self.fxio.trackformat()
             if ioerr:
-                print("WRITE IO ERROR.")
+                print(f"WRITE IO ERROR. {hex(ioerr)}")
                 raise BufferError()
         if verify&2:
             for track in range(0, 160):
@@ -106,7 +107,7 @@ class FloppyXferUtils(object):
                 self.fxio.settrack(track)
                 ioerr = self.fxio.trackread()
                 if ioerr:
-                    print("VERIFY IO ERROR.")
+                    print(f"VERIFY IO ERROR. {hex(ioerr)}")
                     raise BufferError()
                 if self.fxio.callusr() != self.snip.keysum(trackdump):
                     print("VERIFY CRC ERROR.")
