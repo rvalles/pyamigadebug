@@ -6,6 +6,8 @@ class ExecLibrary(Library):
     LVODebug = -114
     LVODisable = -120
     LVOEnable = -126
+    LVOForbid = -132
+    LVOPermit = -138
     LVOAllocMem = -198
     LVOAllocAbs = -204
     LVOFreeMem = -210
@@ -148,6 +150,14 @@ class ExecLibrary(Library):
         return
     def Enable(self):
         self.amiga.callargs(addr=self.base + self.LVOEnable)
+        self.amiga.sync()
+        return
+    def Forbid(self):
+        self.amiga.callargs(addr=self.base + self.LVOForbid)
+        self.amiga.sync()
+        return
+    def Permit(self):
+        self.amiga.callargs(addr=self.base + self.LVOPermit)
         self.amiga.sync()
         return
     def DoIO(self, ioreqaddr):
