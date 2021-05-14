@@ -62,22 +62,22 @@ recvbyte:  ;a2 SERDATR, returns read char at d0b
     rts
 recvlong: ;a2 SERDATR, returns read long at d0
     movem.l d2,-(sp)
-    move.b #$48,d0 ;'H' high word, high char
+    move.b #$48,d0 ;'H' high word, high byte
     bsr sendbyte
     bsr recvbyte
     move.b d0,d2
     lsl.w #8,d2
-    move.b #$68,d0 ;'h' low word, low char
+    move.b #$68,d0 ;'h' high word, low byte
     bsr sendbyte
     bsr recvbyte
     move.b d0,d2
     swap d2
-    move.b #$4c,d0 ;'L' low word, high char
+    move.b #$4c,d0 ;'L' low word, high byte
     bsr sendbyte
     bsr recvbyte
     move.b d0,d2
     lsl.w #8,d2
-    move.b #$6c,d0 ;'l' low word, low char
+    move.b #$6c,d0 ;'l' low word, low byte
     bsr sendbyte
     bsr recvbyte
     move.b d0,d2
