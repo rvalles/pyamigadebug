@@ -115,6 +115,7 @@ class ExecLibrary(Library):
     PA_IGNORE = 2
     PF_ACTION = 3
     #RomTag
+    RTC_MATCHWORD = 0x4AFC
     rt_MatchWord = 0
     rt_MatchTag = 2
     rt_EndSkip = 6
@@ -125,6 +126,7 @@ class ExecLibrary(Library):
     rt_Name = 14
     rt_IdString = 18
     rt_Init = 22
+    rt_sizeof = 26
     def __init__(self, debugger):
         self.amiga = debugger
         self.base = self.amiga.peek32(0x4)
@@ -322,6 +324,25 @@ class ExecLibrary(Library):
             if name == b"strap":
                 self.amiga.poke32(resmodules, 0)
                 print("Disabled strap.")
+            resmodules += 4
+            curmod = self.amiga.peek32(resmodules)
+        return
+    def replaceresidentbyname(self, resname, resaddr):
+        resname = resname.encode("ascii")
+        resmodules = self.amiga.peek32(self.base + self.ResModules)
+        print(f"ResModules: {hex(resmodules)}")
+        curmod = self.amiga.peek32(resmodules)
+        while curmod:
+            nameptr = self.amiga.peek32(curmod+self.rt_Name)
+            name = self.amiga.readstr(nameptr)
+            flags = self.amiga.peek8(curmod+self.rt_Flags)
+            version = self.amiga.peek8(curmod+self.rt_Version)
+            pri = self.amiga.speek8(curmod+self.rt_Pri)
+            print(f"addr {hex(curmod)} name: {name} flags: {bin(flags)} version: {version} pri: {pri}")
+            if name == resname:
+                self.amiga.poke32(resmodules, resaddr)
+                print(f"Replaced resident {resname} with resident @ {hex(resaddr)}.")
+                break
             resmodules += 4
             curmod = self.amiga.peek32(resmodules)
         return
