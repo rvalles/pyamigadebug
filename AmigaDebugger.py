@@ -88,6 +88,6 @@ class AmigaDebugger(object):
             self.setreg(reg, value)
         return
     def dumpregs(self):
-        regs = self.getregs(["a0", "a1", "a2", "a3", "a4", "a5", "a6", "sp","d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7"])
+        regs = self.getregs(["pc", "a0", "a1", "a2", "a3", "a4", "a5", "a6", "sp","d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7"])
         print(regs)
         return
