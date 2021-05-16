@@ -53,17 +53,17 @@ class MenuFrame(wx.Frame):
         self.m_exitdebug.Bind(wx.EVT_BUTTON, self.onExitDebugPressed)
         self.m_exitresume.Bind(wx.EVT_BUTTON, self.onExitResumePressed)
         return
-    def MenuSetup(self, process, crashentry):
-        self.crashentry = crashentry
+    def MenuSetup(self, process, resetfirst):
+        self.resetfirst = resetfirst
         self.m_dos.Enable(process)
-        self.m_exitreset.Enable(not crashentry)
-        self.m_exitdebug.Enable(not crashentry)
-        self.m_exitresume.Enable(not crashentry)
+        self.m_exitreset.Enable(not resetfirst)
+        self.m_exitdebug.Enable(not resetfirst)
+        self.m_exitresume.Enable(not resetfirst)
         return
     def onClose(self, event):
         if event.CanVeto():
             event.Veto()
-        if self.crashentry:
+        if self.resetfirst:
             wx.CallAfter(self.endcallback, "exithardreset")
         else:
             wx.CallAfter(self.endcallback, "exitresume")

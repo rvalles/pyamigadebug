@@ -106,7 +106,7 @@ class AmigaXfer(wx.App):
         return
     def menutool(self):
         self.toolmenu.Show()
-        wx.CallAfter(self.toolmenu.MenuSetup, self.execlib.is_process(), self.crashentry)
+        wx.CallAfter(self.toolmenu.MenuSetup, self.execlib.is_process(), self.resetfirst)
         return
     def floppytool(self):
         if not self.floppyframe:
