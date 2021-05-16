@@ -159,7 +159,7 @@ class SAD(AmigaDebugger):
         return
     def poke8(self, addr, value):
         if self.sadbug:
-            valuebytes = struct.pack(">H", value)
+            valuebytes = struct.pack(">B", value)
             self._writemem(addr, valuebytes)
             return
         self._flush()
