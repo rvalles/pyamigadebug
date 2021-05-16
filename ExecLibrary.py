@@ -1,6 +1,7 @@
 import struct
 from Library import Library
 class ExecLibrary(Library):
+    LVOInitCode = -72
     LVOFindResident = -96
     LVOInitResident = -102
     LVODebug = -114
