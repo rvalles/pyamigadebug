@@ -97,6 +97,7 @@ class RomFrame(wx.Frame):
         bSizer10.Add(wSizer17, 1, wx.EXPAND, 5)
         self.SetSizer(bSizer10)
         self.Layout()
+        self.Fit()
         self.Centre(wx.BOTH)
         self.m_exit.Bind(wx.EVT_BUTTON, self.onExitPressed)
         self.m_dump.Bind(wx.EVT_BUTTON, self.onDumpPressed)
