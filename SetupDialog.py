@@ -307,10 +307,25 @@ class SetupDialog(wx.Frame):
         else:
             print(f"In {amiga.debugger} debugger.")
         #execlib should be the same as before, else CoolCapture wouldn't be called, as execbase would have been rebuilt.
-        print("Patching table of residents to disable strap.")
-        execlib.removeresidentstrap()
+        if execlib.version < 36:
+            print("Patching table of residents to disable strap.")
+            execlib.removeresidentstrap()
+        else:
+            print("Preparing resident module structure with init pointing to Debug().")
+            #Allocate chip just to ensure addr MSB is not set, as that has special meaning in resident table.
+            debugromtag = execlib.AllocMem(execlib.rt_sizeof, execlib.MEMF_CLEAR|execlib.MEMF_CHIP)
+            amiga.poke16(debugromtag+execlib.rt_MatchWord, execlib.RTC_MATCHWORD)
+            amiga.poke32(debugromtag+execlib.rt_MatchTag, debugromtag)
+            amiga.poke8(debugromtag+execlib.rt_Flags, 1)
+            amiga.poke8(debugromtag+execlib.rt_Version, execlib.version) #not actually needed as far as I can tell, but polite.
+            amiga.poke32(debugromtag+execlib.rt_Init, amiga.execdebug)
+            print("Patching table of residents to replace strap with the prepared resident module.")
+            execlib.replaceresidentbyname("strap", debugromtag)
         print("Releasing Amiga.")
-        print("If all went well, without strap, Amiga will call Debug() after resident initialization.")
+        if execlib.version < 36:
+            print("If all went well, without strap, Amiga will call Debug() after resident initialization.")
+        else:
+            print("If all went well, in place of strap, Amiga will call Debug() during resident initialization.")
         amiga.resume()
         self.DebuggerConnectWorker(baudrate, debugger, paranoid, debug, dangerfast, resetfirst, crashentry)
         return
