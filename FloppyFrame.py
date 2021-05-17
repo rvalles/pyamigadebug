@@ -7,8 +7,6 @@ from DosUtils import DosUtils
 from FloppyXferIO import FloppyXferIO
 class FloppyFrame(wx.Frame):
     tracksize = 512 * 11
-    IOERR_WRITEPROT = 0x1C
-    IOERR_NOFLOPPY = 0x1D
     def __init__(self):
         self.endcallback = None
         self.ser = None
@@ -434,15 +432,15 @@ class FloppyFrame(wx.Frame):
                 return
             wx.CallAfter(self.UpdateStatus, "Write")
             ioerr = self.fxio.trackformat()
-            if ioerr == self.IOERR_WRITEPROT:
+            if ioerr == self.fxio.TDERR_WriteProt:
                 wx.CallAfter(self.UpdateStatus, "WriteProt?")
-                print("\nIOERR_WRITEPROT.")
+                print("\nTDERR_WriteProt.")
                 self.fxio.motoroff()
                 wx.CallAfter(self.Stop)
                 return
-            elif ioerr == self.IOERR_NOFLOPPY:
+            elif ioerr == self.fxio.TDERR_DiskChanged:
                 wx.CallAfter(self.UpdateStatus, "NoFloppy?")
-                print("\nIOERR_NOFLOPPY.")
+                print("\nTDERR_DiskChanged.")
                 self.fxio.motoroff()
                 wx.CallAfter(self.Stop)
                 return
@@ -525,9 +523,9 @@ class FloppyFrame(wx.Frame):
                 return
             self.fxio.settrack(track)
             ioerr = self.fxio.trackread()
-            if ioerr == self.IOERR_NOFLOPPY:
+            if ioerr == self.fxio.TDERR_DiskChanged:
                 wx.CallAfter(self.UpdateStatus, "NoFloppy?")
-                print("\nIOERR_NOFLOPPY.")
+                print("\nTDERR_DiskChanged.")
                 self.fxio.motoroff()
                 wx.CallAfter(self.Stop)
                 return
@@ -608,9 +606,9 @@ class FloppyFrame(wx.Frame):
             self.fxio.settrack(track)
             retry = 0
             while ioerr := self.fxio.trackread():
-                if ioerr == self.IOERR_NOFLOPPY:
+                if ioerr == self.fxio.TDERR_DiskChanged:
                     wx.CallAfter(self.UpdateStatus, "NoFloppy?")
-                    print("\nIOERR_NOFLOPPY.")
+                    print("\nTDERR_DiskChanged.")
                     self.fxio.motoroff()
                     wx.CallAfter(self.Stop)
                     return
