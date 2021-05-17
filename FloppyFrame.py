@@ -20,6 +20,7 @@ class FloppyFrame(wx.Frame):
         self.busy = False
         self.drives = 4 #maximum we test for
         self.timerperiod = 50
+        self.disk2adfmaxretries = 5
         super().__init__(None, id=wx.ID_ANY, title=u"amigaXfer floppy tool", pos=wx.DefaultPosition, size=wx.Size(450, 340), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DLIGHT))
@@ -602,19 +603,25 @@ class FloppyFrame(wx.Frame):
             print(f'Reading   Cyl:{cyl:02} Side:{side}', end='\r', flush=True)
             wx.CallAfter(self.UpdateTrack, cyl, side, "Read")
             self.fxio.settrack(track)
-            ioerr = self.fxio.trackread()
-            if ioerr == self.IOERR_NOFLOPPY:
-                wx.CallAfter(self.UpdateStatus, "NoFloppy?")
-                print("\nIOERR_NOFLOPPY.")
-                self.fxio.motoroff()
-                wx.CallAfter(self.Stop)
-                return
-            elif ioerr:
-                wx.CallAfter(self.UpdateStatus, f"RdErr: {ioerr:02X}h")
-                print(f'\nRead IO ERROR {ioerr:02X}h.')
-                self.fxio.motoroff()
-                wx.CallAfter(self.Stop)
-                return
+            retry = 0
+            while ioerr := self.fxio.trackread():
+                if ioerr == self.IOERR_NOFLOPPY:
+                    wx.CallAfter(self.UpdateStatus, "NoFloppy?")
+                    print("\nIOERR_NOFLOPPY.")
+                    self.fxio.motoroff()
+                    wx.CallAfter(self.Stop)
+                    return
+                else:
+                    wx.CallAfter(self.UpdateStatus, f"{ioerr:02X}h Try#{retry}")
+                    print(f'\nRead IO ERROR {ioerr:02X}h')
+                    retry += 1
+                    if retry > self.disk2adfmaxretries:
+                        wx.CallAfter(self.UpdateStatus, f"RdErr: {ioerr:02X}h")
+                        print("Track retry limit exceeded. Giving up.")
+                        self.fxio.motoroff()
+                        wx.CallAfter(self.Stop)
+                        return
+                    print(f"retry {retry} of {self.disk2adfmaxretries}...")
             if self.abort.is_set():
                 wx.CallAfter(self.UpdateStatus, "UserStop.")
                 print("\nUser stopped.")
