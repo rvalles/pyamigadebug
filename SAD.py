@@ -216,7 +216,9 @@ class SAD(AmigaDebugger):
     def reboot(self):
         self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['RESET'] + b'\xFF\xFF\xFF\xFF')
-        ack = self.serial.read(1)
+        #Command is only ACK'd if the CPU is slow enough (68000@7 is), as SAD doesn't wait for TSRE before rebooting.
+        #Therefore, do not bother waiting.
+        #ack = self.serial.read(1)
         return
     def go(self, addr):
         ctx = self._ctxframe
