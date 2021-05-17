@@ -278,14 +278,16 @@ class BootblockFrame(wx.Frame):
         cksum = (~cksum) & mask
         return cksum
     def BootblockSetup(self, endcallback, ser, amiga, execlib, snip):
+        self.Bind(wx.EVT_CLOSE, self.onCloseSetup)
+        self.m_status.ChangeValue(u'Setup')
         self.endcallback = endcallback
         self.ser = ser
         self.amiga = amiga
         self.execlib = execlib
         self.snip = snip
         self.wantclose = False
+        self.Enablement(False)
         threading.Thread(target=self.BootblockSetupWorker).start()
-        self.m_status.ChangeValue(u'Setup')
         return
     def BootblockSetupWorker(self):
         wx.CallAfter(self.UpdateStatus, "Buffer")

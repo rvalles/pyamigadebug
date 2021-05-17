@@ -425,6 +425,7 @@ class DosFrame(wx.Frame):
         self.wantclose = False
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
+        self.Enablement(False)
         threading.Thread(target=self.DosSetupWorker).start()
         return
     def DosSetupWorker(self):

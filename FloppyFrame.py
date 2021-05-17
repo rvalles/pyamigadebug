@@ -123,7 +123,6 @@ class FloppyFrame(wx.Frame):
         self.Enablement(False)
         self.Layout()
         self.Centre(wx.BOTH)
-        self.Bind(wx.EVT_CLOSE, self.onCloseSetup)
         return
     def onCloseSetup(self, event):
         if event.CanVeto():
@@ -217,6 +216,7 @@ class FloppyFrame(wx.Frame):
         self.m_crc.ChangeValue(f'{crc:08x}')
         return
     def XferSetup(self, endcallback, ser, amiga, execlib, snip):
+        self.Bind(wx.EVT_CLOSE, self.onCloseSetup)
         self.endcallback = endcallback
         self.ser = ser
         self.amiga = amiga
@@ -225,8 +225,9 @@ class FloppyFrame(wx.Frame):
         self.wantclose = False
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
-        threading.Thread(target=self.XferSetupWorker).start()
+        self.Enablement(False)
         self.m_status.ChangeValue(u'Setup')
+        threading.Thread(target=self.XferSetupWorker).start()
         return
     def XferSetupWorker(self):
         wx.CallAfter(self.UpdateProgressValue, 0)
