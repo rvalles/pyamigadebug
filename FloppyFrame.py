@@ -400,6 +400,7 @@ class FloppyFrame(wx.Frame):
             self.UpdateStatus("ADF Error.")
             self.Stop()
             return
+        print(f'Adf2Disk verify:{verify}, drive#{drive}, file:{adf} start.')
         threading.Thread(target=self.Adf2DiskWorker, args=(drive, diskdump, verify)).start()
     #Verify 0:None/1:CRCxfer/2:CRCread/3:BothPointless.
     def Adf2DiskWorker(self, drive, diskdump, verify):
@@ -502,6 +503,7 @@ class FloppyFrame(wx.Frame):
             self.UpdateStatus("ADF Error.")
             self.Stop()
             return
+        print(f'CompareDiskAdf drive#{drive}, file:{adf} start.')
         threading.Thread(target=self.CompareDiskAdfWorker, args=(drive, diskdump)).start()
     def CompareDiskAdfWorker(self, drive, diskdump):
         wx.CallAfter(self.UpdateProgressRange, 159)
@@ -584,6 +586,7 @@ class FloppyFrame(wx.Frame):
                 print("Target directory does not exist.")
                 wx.CallAfter(self.Stop)
                 return
+        print(f'Disk2Adf verify:{verify}, drive#{drive}, file:{adf} start.')
         threading.Thread(target=self.Disk2AdfWorker, args=(drive, adf, verify)).start()
         return
     def Disk2AdfWorker(self, drive, adf, verify):
@@ -613,7 +616,7 @@ class FloppyFrame(wx.Frame):
                     return
                 else:
                     wx.CallAfter(self.UpdateStatus, f"{ioerr:02X}h Try#{retry}")
-                    print(f'\nRead IO ERROR {ioerr:02X}h')
+                    print(f'Read IO ERROR {ioerr:02X}h @ Cyl:{cyl:02} Side:{side}')
                     retry += 1
                     if retry > self.disk2adfmaxretries:
                         wx.CallAfter(self.UpdateStatus, f"RdErr: {ioerr:02X}h")
@@ -621,7 +624,7 @@ class FloppyFrame(wx.Frame):
                         self.fxio.motoroff()
                         wx.CallAfter(self.Stop)
                         return
-                    print(f"retry {retry} of {self.disk2adfmaxretries}...")
+                    print(f'retry {retry} of {self.disk2adfmaxretries}...')
             if self.abort.is_set():
                 wx.CallAfter(self.UpdateStatus, "UserStop.")
                 print("\nUser stopped.")
