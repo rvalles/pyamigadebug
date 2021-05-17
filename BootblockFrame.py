@@ -7,8 +7,6 @@ from TrackdiskDevice import TrackdiskDevice
 from FloppyUtils import FloppyUtils
 class BootblockFrame(wx.Frame):
     tracksize = 512 * 11
-    IOERR_WRITEPROT = 0x1C
-    IOERR_NOFLOPPY = 0x1D
     def __init__(self):
         self.endcallback = None
         self.ser = None
@@ -165,15 +163,15 @@ class BootblockFrame(wx.Frame):
         if not doformat:
             wx.CallAfter(self.UpdateStatus, "Read")
             ioerr = floppy.read(bufaddr, 1024, 0)
-            if ioerr == self.IOERR_NOFLOPPY:
+            if ioerr==floppy.TDERR_DiskChanged:
                 print("Couldn't read floppy. Is the floppy in the drive?")
                 wx.CallAfter(self.UpdateStatus, "NoFloppy?")
                 floppy.motoroff()
                 wx.CallAfter(self.InstallCleanup)
                 return
             elif ioerr:
-                print("bootblock on target can't be read. Is this floppy formatted?")
-                wx.CallAfter(self.UpdateStatus, f"RdErr: {ioerr:02X}h")
+                print(f"Bootblock on target couldn't be read. IO Error {ioerr:02X}h. Is this floppy formatted?")
+                wx.CallAfter(self.UpdateStatus, "NoFormat?")
                 floppy.motoroff()
                 wx.CallAfter(self.InstallCleanup)
                 return
@@ -193,21 +191,21 @@ class BootblockFrame(wx.Frame):
         if doformat:
             wx.CallAfter(self.UpdateStatus, "Format")
             ioerr = floppy.tdformat(bufaddr, self.tracksize, 0)
-            if ioerr==self.IOERR_WRITEPROT:
+            if ioerr==floppy.TDERR_WriteProt:
                 wx.CallAfter(self.UpdateStatus, "WriteProt?")
-                print("IOERR_WRITEPROT.")
+                print("Couldn't write to floppy. Is the floppy write-protected?")
                 floppy.motoroff()
                 wx.CallAfter(self.InstallCleanup)
                 return
-            elif ioerr==self.IOERR_NOFLOPPY:
+            elif ioerr==floppy.TDERR_DiskChanged:
                 wx.CallAfter(self.UpdateStatus, "NoFloppy?")
-                print("IOERR_NOFLOPPY.")
+                print("Couldn't write to floppy. Is the floppy in the drive?")
                 floppy.motoroff()
                 wx.CallAfter(self.InstallCleanup)
                 return
             elif ioerr:
-                print(f"FORMAT IO ERROR {ioerr:02X}h.")
-                wx.CallAfter(self.UpdateStatus, f"FmErr: {ioerr:02X}h")
+                print(f"Couldn't format track. IO Error {ioerr:02X}h. Is this a bad floppy?")
+                wx.CallAfter(self.UpdateStatus, f"BadFloppy?")
                 floppy.motoroff()
                 wx.CallAfter(self.InstallCleanup)
                 return
@@ -220,15 +218,15 @@ class BootblockFrame(wx.Frame):
                 ioerr = floppy.update()
                 if ioerr:
                     print(f"Update ioerr {ioerr}.")
-            if ioerr==self.IOERR_WRITEPROT:
+            if ioerr==floppy.TDERR_WriteProt:
                 wx.CallAfter(self.UpdateStatus, "WriteProt?")
-                print("IOERR_WRITEPROT.")
+                print("Couldn't write to floppy. Is the floppy write-protected?")
                 floppy.motoroff()
                 wx.CallAfter(self.InstallCleanup)
                 return
-            elif ioerr==self.IOERR_NOFLOPPY:
+            elif ioerr==floppy.TDERR_DiskChanged:
                 wx.CallAfter(self.UpdateStatus, "NoFloppy?")
-                print("IOERR_NOFLOPPY.")
+                print("TDERR_DiskChanged.")
                 floppy.motoroff()
                 wx.CallAfter(self.InstallCleanup)
                 return
@@ -242,15 +240,15 @@ class BootblockFrame(wx.Frame):
         ioerr = floppy.clear()
         wx.CallAfter(self.UpdateStatus, "Read")
         ioerr = floppy.read(bufaddr, 1024, 0)
-        if ioerr == self.IOERR_NOFLOPPY:
+        if ioerr==floppy.TDERR_DiskChanged:
             print("Couldn't read floppy. Is the floppy in the drive?")
             wx.CallAfter(self.UpdateStatus, "NoFloppy?")
             floppy.motoroff()
             wx.CallAfter(self.InstallCleanup)
             return
         elif ioerr:
-            print("bootblock on target can't be read. Is this floppy formatted?")
-            wx.CallAfter(self.UpdateStatus, f"RdErr: {ioerr:02X}h")
+            print(f"Verify read failed. IO Error {ioerr:02X}h. Is this a bad floppy?")
+            wx.CallAfter(self.UpdateStatus, "BadFloppy?")
             floppy.motoroff()
             wx.CallAfter(self.InstallCleanup)
             return
