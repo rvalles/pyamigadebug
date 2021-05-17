@@ -14,6 +14,22 @@ class FloppyXferIO(object):
     FX_TRACKFORMAT = 0x31
     FX_TRACKSEEK = 0x32
     FX_MOTOROFF = 0x40
+    TDERR_NotSpecified = 20
+    TDERR_NoSecHdr = 21
+    TDERR_BadSecPreamble = 22
+    TDERR_BadSecID = 23
+    TDERR_BadHdrSum = 24
+    TDERR_BadSecSum = 25
+    TDERR_TooFewSecs = 26
+    TDERR_BadSecHdr = 27
+    TDERR_WriteProt = 28
+    TDERR_DiskChanged = 29
+    TDERR_SeekError = 30
+    TDERR_NoMem = 31
+    TDERR_BadUnitNum = 32
+    TDERR_BadDriveType = 33
+    TDERR_DriveInUse = 34
+    TDERR_PostReset = 35
     def __init__(self, snip):
         self.snip = snip
         self.floppyxfer = self.snip.getaddrfile("asm/floppyxfer.o")
