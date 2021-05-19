@@ -18,7 +18,7 @@ This document is a shorter copy included in the archive to facilitate offline us
 * A few blank floppies, verified to be good e.g. by a verified formatting done on another computer. DD is preferable over HD.
 * ADF images of any desired floppies to be written. These are suggested:
     * Workbench and Extras floppies matching the kickstart version.
-    * As a free and open source alternative, Nico Bendlin's HelloAmi https://github.com/nicodex/HelloAmi/releases will boot all the way up to Workbench. He kindly enabled the Workbench's debug menu on my request, which involved some research work on this end. Many thanks for that.
+    * As a free and open source alternative, Nico Bendlin's HelloAmi https://github.com/nicodex/HelloAmi/releases will boot all the way up to Workbench. He kindly enabled the Workbench's debug menu on my request, which involved some research work on his end. Many thanks for that.
     * Keir Fraser's Amiga Test Kit: https://github.com/keirf/Amiga-Stuff/releases
 * A piece of wire or, if pressed, a paperclip.
 * Steady hands that won't connect elsewhere than necessary.
