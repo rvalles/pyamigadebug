@@ -76,40 +76,40 @@ class DosLibrary(Library):
         self.revision = fullversion & 0xFF
         return
     def Open(self, name, accessMode):
-        fd = self.amiga.callargs(addr=self.base + self.LVOOpen, d1=name, d2=accessMode, result="d0")
+        fd = self.amiga.callargs(addr=self.base + self.LVOOpen, a6=self.base, d1=name, d2=accessMode, result="d0")
         return fd
     def Close(self, fd):
-        success = self.amiga.callargs(addr=self.base + self.LVOClose, d1=fd, result="d0")
+        success = self.amiga.callargs(addr=self.base + self.LVOClose, a6=self.base, d1=fd, result="d0")
         if self.version < 36:
             return None
         return success
     def Read(self, fd, buf, size):
-        actualLength = self.amiga.callargs(addr=self.base + self.LVORead, d1=fd, d2=buf, d3=size, result="d0")
+        actualLength = self.amiga.callargs(addr=self.base + self.LVORead, a6=self.base, d1=fd, d2=buf, d3=size, result="d0")
         return actualLength
     def Write(self, fd, buf, size):
-        returnedLength = self.amiga.callargs(addr=self.base + self.LVOWrite, d1=fd, d2=buf, d3=size, result="d0")
+        returnedLength = self.amiga.callargs(addr=self.base + self.LVOWrite, a6=self.base, d1=fd, d2=buf, d3=size, result="d0")
         return returnedLength
     def Delay(self, ticks):
         #uint32 ticks, 50 ticks per second.
-        self.amiga.callargs(addr=self.base + self.LVODelay, d1=ticks)
+        self.amiga.callargs(addr=self.base + self.LVODelay, a6=self.base, d1=ticks)
         self.amiga.sync()
         return
     def Lock(self, name, accessMode):
-        lock = self.amiga.callargs(addr=self.base + self.LVOLock, d1=name, d2=accessMode, result="d0")
+        lock = self.amiga.callargs(addr=self.base + self.LVOLock, a6=self.base, d1=name, d2=accessMode, result="d0")
         return lock
     def UnLock(self, lock):
-        self.amiga.callargs(addr=self.base + self.LVOUnLock, d1=lock)
+        self.amiga.callargs(addr=self.base + self.LVOUnLock, a6=self.base, d1=lock)
         self.amiga.sync()
         return
     def Examine(self, lock, FileInfoBlock):
-        success = self.amiga.callargs(addr=self.base + self.LVOExamine, d1=lock, d2=FileInfoBlock, result="d0")
+        success = self.amiga.callargs(addr=self.base + self.LVOExamine, a6=self.base, d1=lock, d2=FileInfoBlock, result="d0")
         return success
     def Info(self, lock, InfoData):
-        success = self.amiga.callargs(addr=self.base + self.LVOInfo, d1=lock, d2=InfoData, result="d0")
+        success = self.amiga.callargs(addr=self.base + self.LVOInfo, a6=self.base, d1=lock, d2=InfoData, result="d0")
         return success
     def DeviceProc(self, name):
-        process = self.amiga.callargs(addr=self.base + self.LVODeviceProc, d1=name, result="d0")
+        process = self.amiga.callargs(addr=self.base + self.LVODeviceProc, a6=self.base, d1=name, result="d0")
         return process
     def Inhibit(self, filesystem, flag):
-        success = self.amiga.callargs(addr=self.base + self.LVOInhibit, d1=filesystem, d2=flag, result="d0")
+        success = self.amiga.callargs(addr=self.base + self.LVOInhibit, a6=self.base, d1=filesystem, d2=flag, result="d0")
         return success
