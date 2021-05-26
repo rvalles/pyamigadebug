@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 import glob
 dirs = [('docs', 'docs')]
-asmfiles=['asm/debugloop.o', 'asm/crc32.o', 'asm/memsend.o', 'asm/memrecv.o', 'asm/floppyxfer.o']
+asmfiles=['asm/debug.o', 'asm/debugloop.o', 'asm/crc32.o', 'asm/memsend.o', 'asm/memrecv.o', 'asm/floppyxfer.o']
 asmglobs = ['asm/bootblock*.desc', 'asm/bootblock*.dd']
 files=[]
 for path in asmglobs:

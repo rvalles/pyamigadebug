@@ -91,6 +91,8 @@ class AmigaSnippets(object):
             self.verifyupload = kwargs["verifyupload"]
         if "verifyuse" in kwargs:
             self.verifyuse = kwargs["verifyuse"]
+        self.amiga.execdebug = self.getaddrfile("asm/debug.o")
+        print(f"execdebug: {self.amiga.execdebug}")
         return
     def keysum(self, data):
         return self.crc.crc(data)
@@ -206,6 +208,7 @@ class AmigaSnippets(object):
             raise BufferError("CRC doesn't match after transfer.")
         return
     def freeall(self):
+        self.amiga.execdebug = self.amiga.peek32(0x4) - 114
         for (addr, size) in self.snips.values():
             self.execlib.FreeMem(addr, size)
         self.snips.clear()

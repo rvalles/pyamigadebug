@@ -2,7 +2,10 @@ as = vasmm68k_mot
 asflags = -Fbin -phxass #-quiet
 prepbb = ../helpers/bootblock_prepare.py
 .PHONY: all
-all: debug orange.o debugloop.o crc16.o crc16_xmodem.o crc32_nolut.o crc32c_nolut.o crc32.o crc32c.o memrecv.o memsend.o memsend_bne.o bootblock_dos.dd bootblock_debug.dd bootblock_optdebug.dd floppyxfer.o
+all: debug.o debug orange.o debugloop.o crc16.o crc16_xmodem.o crc32_nolut.o crc32c_nolut.o crc32.o crc32c.o memrecv.o memsend.o memsend_bne.o bootblock_dos.dd bootblock_debug.dd bootblock_optdebug.dd floppyxfer.o
+debug.o:
+	@echo "* assembling debug (snippet to re-enter the debugger after a call)..."
+	$(as) $(asflags) debug.S -o debug.o
 debug:
 	@echo "* assembling debug (cli/wb tool to just enter the debugger)..."
 	$(as) -Fhunkexe -kick1hunks -phxass debug.S -o debug
@@ -62,4 +65,4 @@ floppyxfer.o: floppyxfer.S
 	$(as) $(asflags) floppyxfer.S -o floppyxfer.o
 clean:
 	@echo "* Removing build artifacts..."
-	rm -f debug orange.o debugloop.o crc16.o crc16_xmodem.o crc32_nolut.o crc32c_nolut.o crc32.o crc32c.o memrecv.o memsend.o memsend_bne.o bootblock_dos.o bootblock_dos.dd bootblock_debug.o bootblock_debug.dd bootblock_optdebug.o bootblock_optdebug.dd floppyxfer.o
+	rm -f debug.o debug orange.o debugloop.o crc16.o crc16_xmodem.o crc32_nolut.o crc32c_nolut.o crc32.o crc32c.o memrecv.o memsend.o memsend_bne.o bootblock_dos.o bootblock_dos.dd bootblock_debug.o bootblock_debug.dd bootblock_optdebug.o bootblock_optdebug.dd floppyxfer.o
