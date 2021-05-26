@@ -95,7 +95,7 @@ class FloppyFrame(wx.Frame):
         wSizer101.Add(self.m_cylmsg, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
         maxlen = 2
         self.m_cyl = wx.TextCtrl(self, wx.ID_ANY, u"00", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY)
-        self.m_cyl.SetMaxLength(2)
+        self.m_cyl.SetMaxLength(maxlen)
         self.m_cyl.SetFont(wx.Font(wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, wx.EmptyString))
         self.m_cyl.SetInitialSize(self.m_cyl.GetSizeFromTextSize(self.m_cyl.GetTextExtent("A" * maxlen)))
         wSizer101.Add(self.m_cyl, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
