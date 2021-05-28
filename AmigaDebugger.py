@@ -63,6 +63,12 @@ class AmigaDebugger(object):
             value = self.getreg(resultreg)
             return value
         return
+    def libcall(self, **kwargs):
+        if "a6" in kwargs or "addr" in kwargs:
+            raise ValueError()
+        kwargs["addr"] = kwargs["base"]+kwargs["lvo"]
+        kwargs["a6"] = kwargs["base"]
+        return self.callargs(**kwargs)
     def speek32(self, addr):
         value = self.peek32(addr)
         if value >= (2**31):
