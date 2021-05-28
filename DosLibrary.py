@@ -5,7 +5,7 @@ class DosLibrary(Library):
     LVORead = -42
     LVOWrite = -48
     LVODelay = -198
-    LVOLock	= -84
+    LVOLock = -84
     LVOUnLock = -90
     LVOExamine = -102
     LVOInfo = -114
