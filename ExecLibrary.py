@@ -134,91 +134,94 @@ class ExecLibrary(Library):
         fullversion = self.amiga.peek32(self.base + self.lib_Version)
         self.version = fullversion >> 16
         self.revision = fullversion & 0xFF
+    def libcall(self, **kwargs):
+        kwargs["base"] = self.base
+        return self.amiga.libcall(**kwargs)
     def AllocMem(self, size, flags):
-        addr = self.amiga.callargs(addr=self.base + self.LVOAllocMem, a6=self.base, d0=size, d1=flags, result="d0")
+        addr = self.libcall(lvo=self.LVOAllocMem, d0=size, d1=flags, result="d0")
         if not addr:
             print("PANIC: AllocMem failed.")
             raise BufferError()
         return addr
     def FreeMem(self, addr, size):
-        self.amiga.callargs(addr=self.base + self.LVOFreeMem, a6=self.base, a1=addr, d0=size)
+        self.libcall(lvo=self.LVOFreeMem, a1=addr, d0=size)
         self.amiga.sync()
         return
     def AvailMem(self, flags):
-        result = self.amiga.callargs(addr=self.base + self.LVOAvailMem, a6=self.base, d1=flags, result="d0")
+        result = self.libcall(lvo=self.LVOAvailMem, d1=flags, result="d0")
         return result
     def Disable(self):
-        self.amiga.callargs(addr=self.base + self.LVODisable, a6=self.base)
+        self.libcall(lvo=self.LVODisable)
         self.amiga.sync()
         return
     def Enable(self):
-        self.amiga.callargs(addr=self.base + self.LVOEnable, a6=self.base)
+        self.libcall(lvo=self.LVOEnable)
         self.amiga.sync()
         return
     def Forbid(self):
-        self.amiga.callargs(addr=self.base + self.LVOForbid, a6=self.base)
+        self.libcall(lvo=self.LVOForbid)
         self.amiga.sync()
         return
     def Permit(self):
-        self.amiga.callargs(addr=self.base + self.LVOPermit, a6=self.base)
+        self.libcall(lvo=self.LVOPermit)
         self.amiga.sync()
         return
     def DoIO(self, ioreqaddr):
-        ioerr = self.amiga.callargs(addr=self.base + self.LVODoIO, a6=self.base, a1=ioreqaddr, result="d0")
+        ioerr = self.libcall(lvo=self.LVODoIO, a1=ioreqaddr, result="d0")
         return ioerr
     def OpenLibrary(self, name, version):
-        libbase = self.amiga.callargs(addr=self.base + self.LVOOpenLibrary, a6=self.base, a1=name, d0=version, result="d0")
+        libbase = self.libcall(lvo=self.LVOOpenLibrary, a1=name, d0=version, result="d0")
         return libbase
     def OldOpenLibrary(self, name):
-        libbase = self.amiga.callargs(addr=self.base + self.LVOOldOpenLibrary, a6=self.base, a1=name, result="d0")
+        libbase = self.libcall(lvo=self.LVOOldOpenLibrary, a1=name, result="d0")
         return libbase
     def CloseLibrary(self, base):
-        self.amiga.callargs(addr=self.base + self.LVOCloseLibrary, a6=self.base, a1=base)
+        self.libcall(lvo=self.LVOCloseLibrary, a1=base)
         self.amiga.sync()
         return
     def CreateMsgPort(self):
-        msgport = self.amiga.callargs(addr=self.base + self.LVOCreateMsgPort, a6=self.base, result="d0")
+        msgport = self.libcall(lvo=self.LVOCreateMsgPort, result="d0")
         return msgport
     def DeleteMsgPort(self, msgport):
-        self.amiga.callargs(addr=self.base + self.LVODeleteMsgPort, a6=self.base, a0=msgport)
+        self.libcall(lvo=self.LVODeleteMsgPort, a0=msgport)
         self.amiga.sync()
         return
     def CreateIORequest(self, ioreplyport, size):
-        ioreq = self.amiga.callargs(addr=self.base + self.LVOCreateIORequest, a6=self.base, a0=ioreplyport, d0=size, result="d0")
+        ioreq = self.libcall(lvo=self.LVOCreateIORequest, a0=ioreplyport, d0=size, result="d0")
         return ioreq
     def DeleteIORequest(self, ioreq):
-        self.amiga.callargs(addr=self.base + self.LVODeleteIORequest, a6=self.base, a0=ioreq)
+        self.libcall(lvo=self.LVODeleteIORequest, a0=ioreq)
         self.amiga.sync()
         return
     def OpenDevice(self, devname, unitnumber, ioreq, flags):
-        err = self.amiga.callargs(addr=self.base + self.LVOOpenDevice, a6=self.base, a0=devname, d0=unitnumber, a1=ioreq, d1=flags, result="d0")
+        err = self.libcall(lvo=self.LVOOpenDevice, a0=devname, d0=unitnumber, a1=ioreq, d1=flags, result="d0")
         return err
     def CloseDevice(self, ioreq):
-        self.amiga.callargs(addr=self.base + self.LVOCloseDevice, a6=self.base, a1=ioreq)
+        self.libcall(lvo=self.LVOCloseDevice, a1=ioreq)
         self.amiga.sync()
         return
     def AllocSignal(self, signalnum):
-        signalnum = self.amiga.callargs(addr=self.base + self.LVOAllocSignal, a6=self.base, d0=signalnum, result="d0")
+        signalnum = self.libcall(lvo=self.LVOAllocSignal, d0=signalnum, result="d0")
         return signalnum
     def FreeSignal(self, signalnum):
-        self.amiga.callargs(addr=self.base + self.LVOAllocSignal, a6=self.base, d0=signalnum)
+        self.libcall(lvo=self.LVOAllocSignal, d0=signalnum)
         self.amiga.sync()
         return
     def FindResident(self, name):
-        resident = self.amiga.callargs(addr=self.base + self.LVOFindResident, a6=self.base, a1=name, result="d0")
+        resident = self.libcall(lvo=self.LVOFindResident, a1=name, result="d0")
         return resident
     def InitResident(self, resident, segList):
-        res = self.amiga.callargs(addr=self.base + self.LVOInitResident, a6=self.base, a1=resident, d1=segList, result="d0")
+        res = self.libcall(lvo=self.LVOInitResident, a1=resident, d1=segList, result="d0")
         return res
     def PutMsg(self, port, message):
-        self.amiga.callargs(addr=self.base + self.LVOPutMsg, a6=self.base, a0=port, a1=message)
+        self.libcall(lvo=self.LVOPutMsg, a0=port, a1=message)
         self.amiga.sync()
         return
     def GetMsg(self, port):
-        message = self.amiga.callargs(addr=self.base + self.LVOGetMsg, a6=self.base, a0=port, result="d0")
+        message = self.libcall(lvo=self.LVOGetMsg, a0=port, result="d0")
         return message
     def WaitPort(self, port):
-        message = self.amiga.callargs(addr=self.base + self.LVOWaitPort, a6=self.base, a0=port, result="d0")
+        message = self.libcall(lvo=self.LVOWaitPort, a0=port, result="d0")
         return message
     def availdump(self):
         print(f'Memory Total: {hex(self.AvailMem(0))} Chip: {hex(self.AvailMem(self.MEMF_CHIP))} Largest: {hex(self.AvailMem(self.MEMF_LARGEST))} LargestChip: {hex(self.AvailMem(self.MEMF_LARGEST|self.MEMF_CHIP))}')
