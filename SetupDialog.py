@@ -1,3 +1,4 @@
+import os
 import time
 import threading
 import serial
@@ -177,6 +178,15 @@ class SetupDialog(wx.Frame):
             resetfirst = True
         if logwindow:
             wx.GetApp().RedirectStdio()
+        with open("nativeobjs.list", "r") as fh:
+            asmfiles = fh.read().splitlines()
+        missing = False
+        for asmfile in asmfiles:
+            if not os.path.isfile(asmfile):
+                missing = True
+                print(f"Object file {asmfile} is missing.")
+        if missing:
+            wx.MessageBox("Some m68k object files are missing.\n\nBuild missing objects or copy them from matching Windows binary release archive.\n\namigaXfer might work partially or not at all until resolved.", "ERROR", wx.OK|wx.ICON_ERROR)
         print(f'port {serialdev}, baud {baudrate}, debugger {debugger}, paranoid {paranoid}, debug {debug}, dangerfast {dangerfast}, resetfirst {resetfirst}, crashentry {crashentry}')
         if crashentry:
             print("*** Crash entry mode: Refer to bootstrapping documentation.")

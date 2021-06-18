@@ -1,7 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 import glob
 dirs = [('docs', 'docs')]
-asmfiles=['asm/debug.o', 'asm/debugloop.o', 'asm/crc32.o', 'asm/memsend.o', 'asm/memrecv.o', 'asm/floppyxfer.o']
+with open("nativeobjs.list", "r") as fh:
+    asmfiles = fh.read().splitlines()
 asmglobs = ['asm/bootblock*.desc', 'asm/bootblock*.dd']
 files=[]
 for path in asmglobs:

@@ -1,0 +1,6 @@
+asm/debug.o
+asm/debugloop.o
+asm/crc32.o
+asm/memsend.o
+asm/memrecv.o
+asm/floppyxfer.o
