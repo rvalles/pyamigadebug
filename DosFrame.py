@@ -118,6 +118,7 @@ class DosFrame(wx.Frame):
     def onToAmigaPressed(self, event):
         self.Enablement(False)
         self.UpdateStatus("Start")
+        self.busy = True
         localpath = self.m_localpath.GetPath()
         amigapath = self.m_amigapath.GetValue()
         overwrite = self.m_overwrite.GetValue()
@@ -128,6 +129,7 @@ class DosFrame(wx.Frame):
     def onFromAmigaPressed(self, event):
         self.Enablement(False)
         self.UpdateStatus("Start")
+        self.busy = True
         localpath = self.m_localpath.GetPath()
         amigapath = self.m_amigapath.GetValue()
         overwrite = self.m_overwrite.GetValue()
