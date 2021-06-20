@@ -13,6 +13,7 @@ class DosFrame(wx.Frame):
         self.execlib = None
         self.doslib = None
         self.snip = None
+        self.abort = threading.Event()
         self.wantclose = False
         self.busy = False
         self.bufaddr = None
@@ -66,12 +67,16 @@ class DosFrame(wx.Frame):
         self.m_timer.SetMaxLength(maxlen)
         self.m_timer.SetInitialSize(self.m_timer.GetSizeFromTextSize(self.m_timer.GetTextExtent("A" * maxlen)))
         wSizer10.Add(self.m_timer, 0, wx.ALL, 5)
+        self.m_abort = wx.Button(self, wx.ID_ANY, u"Stop", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_abort.Bind(wx.EVT_BUTTON, self.onAbortPressed)
+        wSizer10.Add(self.m_abort, 0, wx.ALL, 5)
         self.m_exit = wx.Button(self, wx.ID_ANY, u"Exit", wx.DefaultPosition, wx.DefaultSize, 0)
         wSizer10.Add(self.m_exit, 0, wx.ALL, 5)
         bSizer7.Add(wSizer10, 0, wx.EXPAND, 5)
         self.SetSizer(bSizer7)
         self.Layout()
         self.Centre(wx.BOTH)
+        self.m_abort.Bind(wx.EVT_BUTTON, self.onAbortPressed)
         self.m_exit.Bind(wx.EVT_BUTTON, self.onExitPressed)
         self.m_overwrite.Bind(wx.EVT_CHECKBOX, self.onOverwriteCheckBox)
         self.m_toamiga.Bind(wx.EVT_BUTTON, self.onToAmigaPressed)
@@ -87,7 +92,9 @@ class DosFrame(wx.Frame):
         if self.wantclose:
             return
         if self.busy:
+            print("Window close request while running. Stopping.")
             self.wantclose = True
+            self.Abort()
             return
         self.UpdateStatus("UserClose")
         self.CleanUp()
@@ -100,6 +107,14 @@ class DosFrame(wx.Frame):
         self.wantclose = True
         wx.CallAfter(self.UpdateStatus, "CleanUp")
         wx.CallAfter(self.CleanUp)
+        return
+    def onAbortPressed(self, event):
+        print("Stop requested by user.")
+        self.Abort()
+        return
+    def Abort(self):
+        self.m_abort.Enable(False)
+        self.abort.set()
         return
     def onOverwriteCheckBox(self, event):
         danger = self.m_overwrite.GetValue()
@@ -117,6 +132,8 @@ class DosFrame(wx.Frame):
         return
     def onToAmigaPressed(self, event):
         self.Enablement(False)
+        self.abort.clear()
+        self.m_abort.Enable(True)
         self.UpdateStatus("Start")
         self.busy = True
         localpath = self.m_localpath.GetPath()
@@ -128,6 +145,8 @@ class DosFrame(wx.Frame):
         return
     def onFromAmigaPressed(self, event):
         self.Enablement(False)
+        self.abort.clear()
+        self.m_abort.Enable(True)
         self.UpdateStatus("Start")
         self.busy = True
         localpath = self.m_localpath.GetPath()
@@ -141,6 +160,7 @@ class DosFrame(wx.Frame):
         self.doslib.Delay(self.delay)
         self.timer.Stop()
         self.busy = False
+        self.m_abort.Enable(False)
         wx.CallAfter(self.UpdateProgressDone)
         if self.wantclose:
             wx.CallAfter(self.CleanUp)
@@ -257,6 +277,11 @@ class DosFrame(wx.Frame):
                         wx.CallAfter(self.Stop)
                         return
         print(f"Local path: {localpath}, Amiga path: {amigapath}.")
+        if self.abort.is_set():
+            wx.CallAfter(self.UpdateStatus, "UserStop.")
+            print("User stopped.")
+            wx.CallAfter(self.Stop)
+            return
         dosfh = self.doslib.Open(amigapathaddr, self.doslib.MODE_NEWFILE)
         print(f"dosfh: {hex(dosfh)}")
         if not dosfh:
@@ -275,6 +300,12 @@ class DosFrame(wx.Frame):
             print(f"transferring {hex(stepsize)} at offset {hex(offset)} remaining {hex(remaining)}")
             wx.CallAfter(self.UpdateStatus, "Xfer+CRC")
             self.snip.verifiedwritemem(self.bufaddr, data[offset:offset + stepsize])
+            if self.abort.is_set():
+                success = self.doslib.Close(dosfh)
+                wx.CallAfter(self.UpdateStatus, "UserStop.")
+                print("User stopped.")
+                wx.CallAfter(self.Stop)
+                return
             wx.CallAfter(self.UpdateStatus, "Write")
             returnedLength = self.doslib.Write(dosfh, self.bufaddr, stepsize)
             if returnedLength != stepsize:
@@ -285,6 +316,12 @@ class DosFrame(wx.Frame):
             print(f"returnedLength: {hex(returnedLength)}")
             block += 1
             wx.CallAfter(self.UpdateProgressValue, block)
+            if self.abort.is_set():
+                success = self.doslib.Close(dosfh)
+                wx.CallAfter(self.UpdateStatus, "UserStop.")
+                print("User stopped.")
+                wx.CallAfter(self.Stop)
+                return
         wx.CallAfter(self.UpdateStatus, "Close")
         success = self.doslib.Close(dosfh)
         wx.CallAfter(self.UpdateStatus, "Done.")
@@ -359,6 +396,11 @@ class DosFrame(wx.Frame):
         self.doslib.UnLock(lock)
         length = self.amiga.peek32(self.bufaddr + self.doslib.fib_Size)
         print(f"Source file length: {length}")
+        if self.abort.is_set():
+            wx.CallAfter(self.UpdateStatus, "UserStop.")
+            print("User stopped.")
+            wx.CallAfter(self.Stop)
+            return
         dosfh = self.doslib.Open(amigapathaddr, self.doslib.MODE_OLDFILE)
         if not dosfh:
             print("Could not Open() source file.")
@@ -382,10 +424,22 @@ class DosFrame(wx.Frame):
                 wx.CallAfter(self.UpdateStatus, "IOErr.")
                 wx.CallAfter(self.Stop)
                 return
+            if self.abort.is_set():
+                success = self.doslib.Close(dosfh)
+                wx.CallAfter(self.UpdateStatus, "UserStop.")
+                print("User stopped.")
+                wx.CallAfter(self.Stop)
+                return
             wx.CallAfter(self.UpdateStatus, "Xfer+CRC")
             fh.write(self.snip.verifiedreadmem(self.bufaddr, actualLength))
             block += 1
             wx.CallAfter(self.UpdateProgressValue, block)
+            if self.abort.is_set():
+                success = self.doslib.Close(dosfh)
+                wx.CallAfter(self.UpdateStatus, "UserStop.")
+                print("User stopped.")
+                wx.CallAfter(self.Stop)
+                return
         wx.CallAfter(self.UpdateStatus, "Close")
         fh.close()
         success = self.doslib.Close(dosfh)
@@ -428,6 +482,8 @@ class DosFrame(wx.Frame):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.timer)
         self.Enablement(False)
+        self.m_abort.Enable(False)
+        self.abort.clear()
         threading.Thread(target=self.DosSetupWorker).start()
         return
     def DosSetupWorker(self):
