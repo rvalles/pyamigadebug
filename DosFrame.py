@@ -139,6 +139,7 @@ class DosFrame(wx.Frame):
         localpath = self.m_localpath.GetPath()
         amigapath = self.m_amigapath.GetValue()
         overwrite = self.m_overwrite.GetValue()
+        print(f"Requested Transfer ToAmiga overwrite: {overwrite}, amigapath: {amigapath}, localpath: {localpath}")
         self.timerbase = time.monotonic()
         self.timer.Start(self.timerperiod)
         threading.Thread(target=self.ToAmigaWorker, args=(localpath, amigapath, overwrite)).start()
@@ -152,6 +153,7 @@ class DosFrame(wx.Frame):
         localpath = self.m_localpath.GetPath()
         amigapath = self.m_amigapath.GetValue()
         overwrite = self.m_overwrite.GetValue()
+        print(f"Requested Transfer FromAmiga overwrite: {overwrite}, amigapath: {amigapath}, localpath: {localpath}")
         self.timerbase = time.monotonic()
         self.timer.Start(self.timerperiod)
         threading.Thread(target=self.FromAmigaWorker, args=(localpath, amigapath, overwrite)).start()
@@ -276,7 +278,7 @@ class DosFrame(wx.Frame):
                         wx.CallAfter(self.UpdateStatus, "OverWrit?")
                         wx.CallAfter(self.Stop)
                         return
-        print(f"Local path: {localpath}, Amiga path: {amigapath}.")
+        print(f"Amiga path: {amigapath}, Local path: {localpath}")
         if self.abort.is_set():
             wx.CallAfter(self.UpdateStatus, "UserStop.")
             print("User stopped.")
@@ -309,11 +311,11 @@ class DosFrame(wx.Frame):
             wx.CallAfter(self.UpdateStatus, "Write")
             returnedLength = self.doslib.Write(dosfh, self.bufaddr, stepsize)
             if returnedLength != stepsize:
+                print(f"returnedLength: {hex(returnedLength)}")
                 print("Error: size written != requested length.")
                 wx.CallAfter(self.UpdateStatus, "IOErr.")
                 success = self.doslib.Close(dosfh)
                 wx.CallAfter(self.Stop)
-            print(f"returnedLength: {hex(returnedLength)}")
             block += 1
             wx.CallAfter(self.UpdateProgressValue, block)
             if self.abort.is_set():
@@ -322,8 +324,10 @@ class DosFrame(wx.Frame):
                 print("User stopped.")
                 wx.CallAfter(self.Stop)
                 return
+        print("Closing file.")
         wx.CallAfter(self.UpdateStatus, "Close")
         success = self.doslib.Close(dosfh)
+        print("Transfer end.")
         wx.CallAfter(self.UpdateStatus, "Done.")
         wx.CallAfter(self.Stop)
         return
@@ -370,7 +374,7 @@ class DosFrame(wx.Frame):
                 wx.CallAfter(self.UpdateStatus, "LNotFile?")
                 wx.CallAfter(self.Stop)
                 return
-        print(f"Local path: {localpath}, Amiga path: {amigapath}.")
+        print(f"Amiga path: {amigapath}, Local path: {localpath}")
         try:
             fh = open(localpath, "wb")
         except:
@@ -417,8 +421,10 @@ class DosFrame(wx.Frame):
             wx.CallAfter(self.UpdateStatus, "Read")
             remaining = length - offset
             stepsize = min(remaining, self.bufsize)
-            actualLength = self.doslib.Read(dosfh, self.bufaddr, self.bufsize)
-            if actualLength != stepsize:
+            print(f"transferring {hex(stepsize)} at offset {hex(offset)} remaining {hex(remaining)}")
+            returnedLength = self.doslib.Read(dosfh, self.bufaddr, self.bufsize)
+            if returnedLength != stepsize:
+                print(f"returnedLength: {hex(returnedLength)}")
                 print("Error: size read != requested length.")
                 self.doslib.Close(dosfh)
                 wx.CallAfter(self.UpdateStatus, "IOErr.")
@@ -431,7 +437,7 @@ class DosFrame(wx.Frame):
                 wx.CallAfter(self.Stop)
                 return
             wx.CallAfter(self.UpdateStatus, "Xfer+CRC")
-            fh.write(self.snip.verifiedreadmem(self.bufaddr, actualLength))
+            fh.write(self.snip.verifiedreadmem(self.bufaddr, returnedLength))
             block += 1
             wx.CallAfter(self.UpdateProgressValue, block)
             if self.abort.is_set():
@@ -440,9 +446,11 @@ class DosFrame(wx.Frame):
                 print("User stopped.")
                 wx.CallAfter(self.Stop)
                 return
+        print("Closing file.")
         wx.CallAfter(self.UpdateStatus, "Close")
         fh.close()
         success = self.doslib.Close(dosfh)
+        print("Transfer end.")
         wx.CallAfter(self.UpdateStatus, "Done.")
         wx.CallAfter(self.Stop)
         return
@@ -507,6 +515,7 @@ class DosFrame(wx.Frame):
             return
         print(f"Allocating bufsize {hex(self.bufsize)}")
         self.bufaddr = self.execlib.AllocMem(self.bufsize, self.execlib.MEMF_PUBLIC)
+        print(f"Allocated buffer @ {hex(self.bufaddr)}")
         dosname = self.snip.getaddrstr("dos.library")
         self.dosbase = self.execlib.OldOpenLibrary(dosname)
         if not self.dosbase:
