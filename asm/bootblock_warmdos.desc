@@ -1,0 +1,8 @@
+Special AmigaDOS-starting bootblock.
+
+On kickstarts lower than v36, it starts dos.library using WarmCapture().
+To achieve this, it exits strap through the same trick as the strapexit bootblock.
+
+On newer kickstarts, it boots normally.
+
+This bootblock is mostly a curiosity.

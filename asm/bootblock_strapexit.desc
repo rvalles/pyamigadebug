@@ -1,0 +1,11 @@
+Makes strap exit, allowing exec InitCode() to continue.
+
+Typically, this will result in InitCode() finishing. After that:
+- On 1.x kickstarts, WarmCapture() is called, then Debug() is called on a loop.
+- On 2.x kickstarts, COLOR0 becomes magenta and execution reaches an infinite loop deadend.
+-- If the floppy prompt was ever shown, then screen only flashes magenta for an instant, as there's a copperlist that sets COLOR0.
+- On 3.x kickstarts, the same happens but as copperlist sets COLOR0 to black, the screen only appears magenta for an instant.
+
+This is implemented in a very ugly manner (strap will jump to the already freed bootblock).
+
+This bootblock is mostly a curiosity. It isn't very useful outside of 1.x kickstarts.
