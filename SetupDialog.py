@@ -136,6 +136,7 @@ class SetupDialog(wx.Frame):
         app.ShowAboutDialog()
         return
     def DebuggerConnectFail(self):
+        wx.MessageBox("Serial port could not be opened.\n\nWrong serial port or incompatible baudrate\n\nNote the standard PC serial port is limited to 115200. For higher speeds, use USB-serial adapters.", "ERROR", wx.OK|wx.ICON_ERROR)
         self.Enablement(True)
         return
     def Enablement(self, enable):
