@@ -314,23 +314,6 @@ class ExecLibrary(Library):
             resmodules += 4
             curmod = self.amiga.peek32(resmodules)
         return
-    def removeresidentstrapbyname(self):
-        resmodules = self.amiga.peek32(self.base + self.ResModules)
-        print(f"ResModules: {hex(resmodules)}")
-        curmod = self.amiga.peek32(resmodules)
-        while curmod:
-            nameptr = self.amiga.peek32(curmod+self.rt_Name)
-            name = self.amiga.readstr(nameptr)
-            flags = self.amiga.peek8(curmod+self.rt_Flags)
-            version = self.amiga.peek8(curmod+self.rt_Version)
-            pri = self.amiga.speek8(curmod+self.rt_Pri)
-            print(f"addr {hex(curmod)} name: {name} flags: {bin(flags)} version: {version} pri: {pri}")
-            if name == b"strap":
-                self.amiga.poke32(resmodules, 0)
-                print("Disabled strap.")
-            resmodules += 4
-            curmod = self.amiga.peek32(resmodules)
-        return
     def replaceresidentbyname(self, resname, resaddr):
         resname = resname.encode("ascii")
         resmodules = self.amiga.peek32(self.base + self.ResModules)
