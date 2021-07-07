@@ -50,7 +50,7 @@ class SAD(AmigaDebugger):
         self._sync()
         self.sadbug = self.checksadbug()
         if self.sadbug and self.debug:
-            print("Bugged SAD!!!")
+            print("Bugged SAD. Enabling workarounds.")
         self.sadcmd = {name: struct.pack(">B", value - (1 if (self.sadbug and value) else 0)) for (name, value) in self.sadcmdbook}
         self.execdebug = self.peek32(0x4) - 114
         self._ctxframe = self._get_context_frame()
