@@ -92,7 +92,7 @@ class AmigaSnippets(object):
         if "verifyuse" in kwargs:
             self.verifyuse = kwargs["verifyuse"]
         self.amiga.execdebug = self.getaddrfile("asm/debug.o")
-        print(f"execdebug: {self.amiga.execdebug}")
+        print(f"snip execdebug @ {hex(self.amiga.execdebug)}")
         return
     def keysum(self, data):
         return self.crc.crc(data)
