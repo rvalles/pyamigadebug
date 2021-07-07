@@ -9,6 +9,7 @@ for path in asmglobs:
     files.extend([(asmfile, "asm/") for asmfile in glob.glob(path)])
 files.extend([(asmfile, "asm/") for asmfile in asmfiles])
 files.extend(dirs)
+files.extend([("nativeobjs.list", "./")])
 print(files)
 block_cipher = None
 a = Analysis(['amigaXfer.py'],
