@@ -326,12 +326,16 @@ class ExecLibrary(Library):
             version = self.amiga.peek8(curmod+self.rt_Version)
             pri = self.amiga.speek8(curmod+self.rt_Pri)
             print(f"addr {hex(curmod)} name: {name} flags: {bin(flags)} version: {version} pri: {pri}")
+            found = False
             if name == resname:
+                found = True
                 self.amiga.poke32(resmodules, resaddr)
                 print(f"Replaced resident {resname} with resident @ {hex(resaddr)}.")
                 break
             resmodules += 4
             curmod = self.amiga.peek32(resmodules)
+        if not found:
+            print(f"replaceresidentbyname Error: could not find resident {resname}.")
         return
     def removeresidentstrap(self):
         resmodules = self.amiga.peek32(self.base + self.ResModules)
