@@ -196,14 +196,14 @@ class SetupDialog(wx.Frame):
             #debug = True
             paranoid = False
             try:
-                ser = serial.Serial(serialdev, 9600, timeout=None)
+                ser = serial.Serial(serialdev, 9600, timeout=None, exclusive=True)
             except:
                 print("Serial device could not be opened.")
                 wx.CallAfter(self.DebuggerConnectFail)
                 return
         else:
             try:
-                ser = serial.Serial(serialdev, ntscbaudrate, timeout=None)
+                ser = serial.Serial(serialdev, ntscbaudrate, timeout=None, exclusive=True)
             except:
                 print(f"Serial device {serialdev} could not be opened at {ntscbaudrate} baud.")
                 wx.CallAfter(self.DebuggerConnectFail)
