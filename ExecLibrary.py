@@ -168,7 +168,7 @@ class ExecLibrary(Library):
         return
     def DoIO(self, ioreqaddr):
         ioerr = self.libcall(lvo=self.LVODoIO, a1=ioreqaddr, result="d0")
-        return ioerr
+        return ioerr & 0xFF
     def OpenLibrary(self, name, version):
         libbase = self.libcall(lvo=self.LVOOpenLibrary, a1=name, d0=version, result="d0")
         return libbase
