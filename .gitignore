@@ -5,6 +5,7 @@ asm/debug
 *.rom
 *.dump
 *.dd
+*.fs
 *.o
 *.L68
 *.S68
