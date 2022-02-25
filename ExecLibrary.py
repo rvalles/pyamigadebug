@@ -30,6 +30,7 @@ class ExecLibrary(Library):
     LVOOpenLibrary = -552
     #v36+
     LVOCacheClearU = -636
+    LVOCacheClearE = -642
     LVOCreateIORequest = -654
     LVODeleteIORequest = -660
     LVOCreateMsgPort = -666
@@ -224,6 +225,10 @@ class ExecLibrary(Library):
     def WaitPort(self, port):
         message = self.libcall(lvo=self.LVOWaitPort, a0=port, result="d0")
         return message
+    def ClearCacheU(self):
+        self.libcall(lvo=self.LVOCacheClearU)
+        self.amiga.sync()
+        return
     def availdump(self):
         print(f'Memory Total: {hex(self.AvailMem(0))} Chip: {hex(self.AvailMem(self.MEMF_CHIP))} Largest: {hex(self.AvailMem(self.MEMF_LARGEST))} LargestChip: {hex(self.AvailMem(self.MEMF_LARGEST|self.MEMF_CHIP))}')
         return

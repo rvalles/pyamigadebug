@@ -129,6 +129,8 @@ class AmigaSnippets(object):
     def upload(self, data):
         addr = self.allocmem(len(data), 0)
         self.amiga.writemem(addr, data)
+        if self.execlib.version >= 37:
+            self.execlib.ClearCacheU()
         return addr
     def getaddrfile(self, path):
         with open(pathlib.Path(path), "rb") as f:
