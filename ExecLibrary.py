@@ -134,6 +134,7 @@ class ExecLibrary(Library):
         fullversion = self.amiga.peek32(self.base + self.lib_Version)
         self.version = fullversion >> 16
         self.revision = fullversion & 0xFF
+        return
     def libcall(self, **kwargs):
         kwargs["base"] = self.base
         return self.amiga.libcall(**kwargs)
@@ -269,6 +270,7 @@ class ExecLibrary(Library):
             self.DeleteIORequest(ioaddr)
         else:
             self.FreeMem(ioaddr, 0x30)
+        return
     def execchksum(self, data):
         cksum = 0
         mask = (1<<16)-1
@@ -300,6 +302,7 @@ class ExecLibrary(Library):
         for (taskaddr, lnsucc, lnpred, lntype, lnpri, lnnameptr, lnname, taskstate) in tasks:
             tasktype = "Pr" if lntype == 13 else "Ta"
             print(f'{taskaddr:0>8x} {lnpri:3d} {taskstate:5s} {tasktype} {lnname.decode("ascii")}')
+        return
     def printresidentlist(self):
         resmodules = self.amiga.peek32(self.base + self.ResModules)
         print(f"ResModules: {hex(resmodules)}")
