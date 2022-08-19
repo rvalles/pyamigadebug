@@ -284,6 +284,8 @@ class SetupDialog(wx.Frame):
         if crashentry:
             print("Waiting for Amiga to enter unrecoverable alert routine (the blink + reboot + guru sort).")
             while not ser.in_waiting:
+                if self.syncabort.is_set():
+                    exit(1)
                 ser.write(b'\x7F')
                 time.sleep(0.3)
             print("Amiga is alive. Attempting debugger entry.")
