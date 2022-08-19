@@ -6,6 +6,7 @@ class DosUtils(object):
         self.doslib = kwargs["doslib"]
         self.snip = kwargs["snippets"]
         self.bufsize = 0x10000
+        return
     def readfile(self, filepath):
         bufaddr = self.execlib.AllocMem(self.bufsize, self.execlib.MEMF_PUBLIC)
         print(f"buffer addr: {hex(bufaddr)} size: {self.bufsize}")

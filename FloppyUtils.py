@@ -129,6 +129,7 @@ class FloppyUtils(object):
         ioerr = floppy.rawwrite(bufaddr, size, track, flags)
         print(f"rawwrite ioerr: {ioerr}")
         self.execlib.FreeMem(bufaddr, size)
+        return
     def decodeamigamfm(self, odd, even):
         mask = 0x55555555
         if len(odd) != len(even):

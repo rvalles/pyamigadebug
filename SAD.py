@@ -100,6 +100,7 @@ class SAD(AmigaDebugger):
             while self.serial.in_waiting:
                 self.serial.read(1)
             time.sleep(0.002)
+        return
     def peek32(self, addr):
         self._flush()
         self.serial.write(b'\xAF' + self.sadcmd['READ_LONG'])
