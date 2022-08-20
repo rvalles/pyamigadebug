@@ -14,6 +14,7 @@ class AmigaXfer(wx.App):
         self.bootblockframe = None
         self.dosframe = None
         self.romframe = None
+        self.version = "1.1.1"
         return
     def OnInit(self):
         self.debugger = None
@@ -24,9 +25,9 @@ class AmigaXfer(wx.App):
     def ShowAboutDialog(self):
         info = wx.adv.AboutDialogInfo()
         info.SetName("amigaXfer")
-        info.SetVersion("1.1.1")
+        info.SetVersion(self.version)
         info.SetDescription("Data transfer and tools for an Amiga on the serial port.")
-        info.SetCopyright("(C) 2021 Roc Vallès i Domènech")
+        info.SetCopyright("(C) 2021, 2022 Roc Vallès i Domènech")
         wx.adv.AboutBox(info)
         return
     def SetupDialogDone(self, ser, amiga, execlib, snip, resetfirst, crashentry, regs):
@@ -106,6 +107,7 @@ class AmigaXfer(wx.App):
         return
     def menutool(self):
         self.toolmenu.Show()
+        print(f"Main Menu. Version: {self.version}, resetfirst: {self.resetfirst}.")
         wx.CallAfter(self.toolmenu.MenuSetup, self.execlib.is_process(), self.resetfirst)
         return
     def floppytool(self):
