@@ -3,78 +3,78 @@ asflags = -Fbin -phxass #-quiet
 prepbb = ../helpers/bootblock_prepare.py
 .PHONY: all
 all: debug.o debug orange.o debugloop.o crc16.o crc16_xmodem.o crc32_nolut.o crc32c_nolut.o crc32.o crc32c.o memrecv.o memsend.o memsend_bne.o bootblock_dos.dd bootblock_debug.dd bootblock_optdebug.dd bootblock_strapexit.dd bootblock_warmdos.dd floppyxfer.o
-debug.o:
+debug.o: debug.S
 	@echo "* assembling debug (snippet to re-enter the debugger after a call)..."
-	$(as) $(asflags) debug.S -o debug.o
-debug:
+	$(as) $(asflags) $< -o $@
+debug: debug.S
 	@echo "* assembling debug (cli/wb tool to just enter the debugger)..."
-	$(as) -Fhunkexe -kick1hunks -phxass debug.S -o debug
+	$(as) -Fhunkexe -kick1hunks -phxass $< -o $@
 orange.o: orange.S
 	@echo "* assembling orange (set COLOR0 infinite loop)..."
-	$(as) $(asflags) orange.S -o orange.o
+	$(as) $(asflags) $< -o $@
 debugloop.o: debugloop.S
 	@echo "* assembling debugloop (SAD timeout workaround)..."
-	$(as) $(asflags) debugloop.S -o debugloop.o
+	$(as) $(asflags) $< -o $@
 crc16.o: crc16.S
 	@echo "* assembling crc16 (CRC-16/KERMIT)..."
-	$(as) $(asflags) crc16.S -o crc16.o
+	$(as) $(asflags) $< -o $@
 crc16_xmodem.o: crc16_xmodem.S
 	@echo "* assembling crc16_xmodem (CRC-16/XMODEM)..."
-	$(as) $(asflags) crc16_xmodem.S -o crc16_xmodem.o
+	$(as) $(asflags) $< -o $@
 crc32.o: crc32.S
 	@echo "* assembling crc32 (CRC-32/ISO-HDLC)..."
-	$(as) $(asflags) crc32.S -o crc32.o
+	$(as) $(asflags) $< -o $@
 crc32c.o: crc32.S
 	@echo "* assembling crc32c (CRC-32/ISCSI)..."
-	$(as) $(asflags) crc32.S -Dcrc32c -o crc32c.o
+	$(as) $(asflags) $< -Dcrc32c -o $@
 crc32_nolut.o: crc32_nolut.S
 	@echo "* assembling crc32 w/o lut (CRC-32/ISO-HDLC)..."
-	$(as) $(asflags) crc32_nolut.S -o crc32_nolut.o
+	$(as) $(asflags) $< -o $@
 crc32c_nolut.o: crc32_nolut.S
 	@echo "* assembling crc32c w/o lut (CRC-32/ISCSI)..."
-	$(as) $(asflags) crc32_nolut.S -Dcrc32c -o crc32c_nolut.o
+	$(as) $(asflags) $< -Dcrc32c -o $@
 memsend.o: memsend.S
 	@echo "* assembling memory send w/dbra loop..."
-	$(as) $(asflags) memsend.S -o memsend.o
+	$(as) $(asflags) $< -o $@
 memsend_bne.o: memsend_bne.S
 	@echo "* assembling memory send w/movl+bne loop..."
-	$(as) $(asflags) memsend_bne.S -o memsend_bne.o
+	$(as) $(asflags) $< -o $@
 memrecv.o: memrecv.S
 	@echo "* assembling memory receive..."
-	$(as) $(asflags) memrecv.S -o memrecv.o
+	$(as) $(asflags) $< -o $@
 bootblock_dos.o: bootblock_dos.S
 	@echo "* assembling bootblock that returns with d0=0 a0=dos_init..."
-	$(as) $(asflags) bootblock_dos.S -o bootblock_dos.o
+	$(as) $(asflags) $< -o $@
 bootblock_dos.dd: bootblock_dos.o
 	@echo "* preparing bootblock that returns with d0=0 a0=dos_init..."
-	$(prepbb) bootblock_dos.o bootblock_dos.dd
+	$(prepbb) $< $@
 bootblock_debug.o: bootblock_debug.S
 	@echo "* assembling bootblock that calls debug..."
-	$(as) $(asflags) bootblock_debug.S -o bootblock_debug.o
+	$(as) $(asflags) $< -o $@
 bootblock_debug.dd: bootblock_debug.o
 	@echo "* preparing bootblock that calls debug..."
-	$(prepbb) bootblock_debug.o bootblock_debug.dd
+	$(prepbb) $< $@
 bootblock_optdebug.o: bootblock_optdebug.S
 	@echo "* assembling bootblock that optionally calls debug..."
-	$(as) $(asflags) bootblock_optdebug.S -o bootblock_optdebug.o
+	$(as) $(asflags) $< -o $@
 bootblock_optdebug.dd: bootblock_optdebug.o
 	@echo "* preparing bootblock that optionally calls debug..."
-	$(prepbb) bootblock_optdebug.o bootblock_optdebug.dd
+	$(prepbb) $< $@
 bootblock_strapexit.o: bootblock_strapexit.S
 	@echo "* assembling bootblock that causes strap to actually return..."
-	$(as) $(asflags) bootblock_strapexit.S -o bootblock_strapexit.o
+	$(as) $(asflags) $< -o $@
 bootblock_strapexit.dd: bootblock_strapexit.o
 	@echo "* preparing bootblock that causes strap to actually return..."
-	$(prepbb) bootblock_strapexit.o bootblock_strapexit.dd
+	$(prepbb) $< $@
 bootblock_warmdos.o: bootblock_warmdos.S
 	@echo "* assembling bootblock that causes strap to actually return and start dos via WarmCapture()..."
-	$(as) $(asflags) bootblock_warmdos.S -o bootblock_warmdos.o
+	$(as) $(asflags) $< -o $@
 bootblock_warmdos.dd: bootblock_warmdos.o
 	@echo "* preparing bootblock that causes strap to actually return and start dos via WarmCapture()..."
-	$(prepbb) bootblock_warmdos.o bootblock_warmdos.dd
+	$(prepbb) $< $@
 floppyxfer.o: floppyxfer.S
 	@echo "* assembling floppy xfer..."
-	$(as) $(asflags) floppyxfer.S -o floppyxfer.o
+	$(as) $(asflags) $< -o $@
 clean:
 	@echo "* Removing build artifacts..."
-	rm -f debug.o debug orange.o debugloop.o crc16.o crc16_xmodem.o crc32_nolut.o crc32c_nolut.o crc32.o crc32c.o memrecv.o memsend.o memsend_bne.o bootblock_dos.o bootblock_dos.dd bootblock_debug.o bootblock_debug.dd bootblock_optdebug.o bootblock_optdebug.dd bootblock_strapexit.o bootblock_strapexit.dd bootblock_warmdos.o bootblock_warmdos.dd floppyxfer.o
+	rm -f debug *.o *.dd
