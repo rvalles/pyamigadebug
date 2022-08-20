@@ -1,3 +1,7 @@
+COLOR00 equ $dff180
+CIAAPRA equ $bfe001
+SERDATR equ $dff018
+POTINP equ $dff016
 _LVOFindResident equ -96
 _LVODebug equ -114
 _LVOAllocMem = -198
@@ -27,7 +31,7 @@ header:
 ;a6 execbase
 ;clobbering non-scratch regs is verified to be bad.
 start:
-    move.w #$0FD8,$dff180 ;color to orange. It should never be seen.
+    move.w #$0FD8,COLOR00 ;color to orange. It should never be seen.
     move.l a1,-(sp) ;ioreq backup, as there it should survive calls.
     lea.l graphicsname,a1
     jsr _LVOOldOpenLibrary(a6)
@@ -37,12 +41,12 @@ start:
     movea.l a6,a1
     movea.l $4,a6
     jsr _LVOCloseLibrary(a6)
-    btst #6,$bfe001
+    btst #6,CIAAPRA
     beq .normalboot ;left mouse button always boot normally
-    bset #1,$bfe001 ;filter off
-    btst #14,$dff018 ;SERDATR RBF
+    bset #1,CIAAPRA ;filter off
+    btst #14,SERDATR ;RBF
     bne debug ;if serial input, debug
-    btst #2,$dff016 ;POTINP DATLY
+    btst #2,POTINP ;DATLY
     beq debug ;right mouse always debug
     move.l #22, d0
     move.l #MEMF_PUBLIC, d1
@@ -68,7 +72,7 @@ start:
     jsr _LVOFindResident(a6)
     tst.l d0
     bne good ;if d0 != 0 that's good
-    move.w #$0F0F,$dff180 ;color for this odd situation
+    move.w #$0F0F,COLOR00 ;color for this odd situation
     sub.l #1,d0 ;return bad
     rts
 expansionname:
@@ -83,16 +87,16 @@ good:
     move.l rt_Init(a0),a0
     clr.l d0 ;return good
     move.l (sp)+,a1 ;compatibility with early ks. They need a1=ioreq.
-    move.w #$024D,$dff180 ;set color to show this custom bootblock is booting
+    move.w #$024D,COLOR00 ;set color to show this custom bootblock is booting
     rts
 debug:
     move.l (sp)+,a1 ;restore ioreq as we need to do i/o
     move.w #TD_MOTOR,io_Command(a1)
     clr.l io_Length(a1)
     jsr _LVODoIO(a6) ;turn boot drive motor off
-    move.w #$00F0,$dff180 ;green screen before calling debug
+    move.w #$00F0,COLOR00 ;green screen before calling debug
     jsr _LVODebug(a6)
-    move.w #$0F00,$dff180 ;red screen when returning from debug
+    move.w #$0F00,COLOR00 ;red screen when returning from debug
     rts
 .banner
     dc.b "bootblock_optdebug", 10

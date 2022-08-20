@@ -1,3 +1,4 @@
+COLOR00 equ $dff180
 _LVODebug equ -114
 _LVODoIO equ -456
 _LVOOldOpenLibrary equ -408
@@ -29,10 +30,10 @@ start:
     move.w #TD_MOTOR,io_Command(a1)
     clr.l io_Length(a1)
     jsr _LVODoIO(a6) ;turn boot drive motor off
-    move.w #$0AFA,$dff180 ;green screen before calling debug.
+    move.w #$0AFA,COLOR00 ;green screen before calling debug.
 .debugloop
     jsr _LVODebug(a6)
-    move.w #$0FAA,$dff180 ;red screen when returning from debug
+    move.w #$0FAA,COLOR00 ;red screen when returning from debug
     bra .debugloop
 .graphicsname
     dc.b "graphics.library",0
