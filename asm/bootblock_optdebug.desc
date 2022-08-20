@@ -5,7 +5,7 @@ Normally, this bootblock will mostly behave as the standard-ish AmigaDOS bootblo
 * Install Debug() as NMI server.
 
 But, if there's serial input or the right mouse button is held, this bootblock will instead:
-* Calls execlib->Debug().
+* Call execlib->Debug().
 * Then return without doing anything else.
 
 Thus, from the debugger, it is possible to take over or to just return and boot normally.

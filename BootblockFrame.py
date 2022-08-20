@@ -182,10 +182,22 @@ class BootblockFrame(wx.Frame):
                 wx.CallAfter(self.UpdateStatus, "NDOS.")
                 wx.CallAfter(self.InstallCleanup)
                 return
-            bootblock[3] = bbhdr[3]
-            bootblock[4:8] = bytes(4)
-            bootblock[8:12] = bbhdr[8:12]
-            bootblock[4:8] = struct.pack(">I", self.bootblocksum(bootblock))
+            oldsum = struct.unpack(">I", bootblock[4:8])[0]
+            bbnosum = bytearray(bootblock)
+            bbnosum[4:8] = bytes(4)
+            if oldsum == self.bootblocksum(bbnosum):
+                print("New bootblock's checksum is correct. Adjusting FS flags and root block, and recalculating checksum.")
+                bootblock[4:8] == struct.pack(">I", self.bootblocksum(bootblock))
+                bootblock[3] = bbhdr[3]
+                bootblock[4:8] = bytes(4)
+                bootblock[8:12] = bbhdr[8:12]
+                bootblock[4:8] = struct.pack(">I", self.bootblocksum(bootblock))
+            else:
+                print("New bootblock's checksum is wrong. Treat as non-bootable.")
+                if bootblock[0:3] == b"DOS":
+                    print("New bootblock has DOS signature. Adjusting FS flags and root block, while skipping checksum to keep non-bootable.")
+                    bootblock[3] = bbhdr[3]
+                    bootblock[8:12] = bbhdr[8:12]
         wx.CallAfter(self.UpdateStatus, "Send+CRC")
         self.snip.verifiedwritemem(bufaddr, bootblock)
         if doformat:
@@ -264,6 +276,7 @@ class BootblockFrame(wx.Frame):
             return
         wx.CallAfter(self.UpdateStatus, "Done.")
         wx.CallAfter(self.InstallCleanup)
+        print("Bootblock installed.")
         return
     def bootblocksum(self, data):
         cksum = 0

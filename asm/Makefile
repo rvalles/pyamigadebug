@@ -2,7 +2,7 @@ as = vasmm68k_mot
 asflags = -Fbin -phxass #-quiet
 prepbb = ../helpers/bootblock_prepare.py
 .PHONY: all
-all: debug.o debug orange.o debugloop.o crc16.o crc16_xmodem.o crc32_nolut.o crc32c_nolut.o crc32.o crc32c.o memrecv.o memsend.o memsend_bne.o bootblock_dos.dd bootblock_debug.dd bootblock_optdebug.dd bootblock_strapexit.dd bootblock_warmdos.dd floppyxfer.o
+all: debug.o debug orange.o debugloop.o crc16.o crc16_xmodem.o crc32_nolut.o crc32c_nolut.o crc32.o crc32c.o memrecv.o memsend.o memsend_bne.o bootblock_dos.dd bootblock_debug.dd bootblock_optdebug.dd bootblock_strapexit.dd bootblock_warmdos.dd bootblock_noboot.dd floppyxfer.o
 debug.o: debug.S
 	@echo "* assembling debug (snippet to re-enter the debugger after a call)..."
 	$(as) $(asflags) $< -o $@
@@ -72,6 +72,9 @@ bootblock_warmdos.o: bootblock_warmdos.S
 bootblock_warmdos.dd: bootblock_warmdos.o
 	@echo "* preparing bootblock that causes strap to actually return and start dos via WarmCapture()..."
 	$(prepbb) $< $@
+bootblock_noboot.dd: bootblock_noboot.S
+	@echo "* assembling bootblock that AmigaOS won't recognize as bootable..."
+	$(as) $(asflags) $< -o $@
 floppyxfer.o: floppyxfer.S
 	@echo "* assembling floppy xfer..."
 	$(as) $(asflags) $< -o $@

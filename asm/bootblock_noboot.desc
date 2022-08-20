@@ -1,0 +1,5 @@
+Standard-ish AmigaDOS non-bootable bootblock.
+
+This bootblock's checksum does not match, so AmigaOS won't boot from it.
+
+AmigaOS still recognizes the disk as DOS, and will try and mount its filesystem.
