@@ -95,12 +95,16 @@ class AmigaXfer(wx.App):
                 self.execlib.exitdebugloop()
             wx.Exit()
         elif choice == "floppytool":
+            print(f"Tool selected: {choice}.")
             wx.CallAfter(self.floppytool)
         elif choice == "bootblocktool":
+            print(f"Tool selected: {choice}.")
             wx.CallAfter(self.bootblocktool)
         elif choice == "dostool":
+            print(f"Tool selected: {choice}.")
             wx.CallAfter(self.dostool)
         elif choice == "romtool":
+            print(f"Tool selected: {choice}.")
             wx.CallAfter(self.romtool)
         else:
             print(f"Choice {choice} isn't implemented.")
