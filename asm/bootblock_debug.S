@@ -25,7 +25,6 @@ start:
     movea.l a6,a1
     movea.l $4,a6
     jsr _LVOCloseLibrary(a6)
-    move.l #$bfd100,a0
     move.l a3,a1
     move.w #TD_MOTOR,io_Command(a1)
     clr.l io_Length(a1)
@@ -41,5 +40,5 @@ start:
     dc.b "bootblock_debug", 10
     dc.b "Calls Exec->Debug() in a loop.",10
     dc.b "*** Bundled with amigaXfer.",10
-    dc.b "(C) 2021 Roc Valles Domenech",10
+    dc.b "(C) 2022 Roc Valles Domenech",10
     dc.b "https://www.rvalles.net",0

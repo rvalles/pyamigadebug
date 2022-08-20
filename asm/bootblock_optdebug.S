@@ -37,7 +37,6 @@ start:
     movea.l a6,a1
     movea.l $4,a6
     jsr _LVOCloseLibrary(a6)
-    move.l #$bfd100,a0
     btst #6,$bfe001
     beq .normalboot ;left mouse button always boot normally
     bset #1,$bfe001 ;filter off
@@ -101,5 +100,5 @@ debug:
     dc.b "Hold left mouse button to always boot normally.",10
     dc.b "Disables audio filter and installs debug() as NMI server unless LMB held.",10
     dc.b "*** Bundled with amigaXfer.",10
-    dc.b "(C) 2021 Roc Valles Domenech",10
+    dc.b "(C) 2022 Roc Valles Domenech",10
     dc.b "https://www.rvalles.net",0
