@@ -207,7 +207,7 @@ class RomFrame(wx.Frame):
         romdump = bytearray()
         romaddr = self.romutil.getaddr()
         length = self.romutil.getsize()
-        blocks = length / self.stepsize
+        blocks = length // self.stepsize
         wx.CallAfter(self.UpdateProgressRange, blocks)
         block = 0
         for addr in range(romaddr, romaddr+length, self.stepsize):
