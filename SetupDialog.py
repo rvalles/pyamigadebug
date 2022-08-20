@@ -34,10 +34,11 @@ class SetupDialog(wx.Frame):
         (6, 511363),
         (4, 715909)
         ]
-    def __init__(self, endcallback):
+    def __init__(self, endcallback, version):
         self.endcallback = endcallback
+        self.version = version
         self.syncabort = threading.Event()
-        super().__init__(None, id=wx.ID_ANY, title=u"amigaXfer Setup", pos=wx.DefaultPosition, size=wx.Size(512, 225), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+        super().__init__(None, id=wx.ID_ANY, title=f"amigaXfer {version} Setup", pos=wx.DefaultPosition, size=wx.Size(512, 225), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DLIGHT))
         bSizer1 = wx.BoxSizer(wx.VERTICAL)
@@ -179,6 +180,7 @@ class SetupDialog(wx.Frame):
             resetfirst = True
         if logwindow:
             wx.GetApp().RedirectStdio()
+        print(f'AmigaXfer version {self.version}.')
         with open("nativeobjs.list", "r") as fh:
             asmfiles = fh.read().splitlines()
         missing = False

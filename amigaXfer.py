@@ -14,12 +14,12 @@ class AmigaXfer(wx.App):
         self.bootblockframe = None
         self.dosframe = None
         self.romframe = None
-        self.version = "1.1.1"
         return
     def OnInit(self):
         self.debugger = None
-        self.toolmenu = MenuFrame(self.MenuDone)
-        self.setupframe = SetupDialog(self.SetupDialogDone)
+        self.version = "1.1.1"
+        self.toolmenu = MenuFrame(self.MenuDone, self.version)
+        self.setupframe = SetupDialog(self.SetupDialogDone, self.version)
         self.setupframe.Show()
         return True
     def ShowAboutDialog(self):

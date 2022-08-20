@@ -1,9 +1,10 @@
 import wx
 class MenuFrame(wx.Frame):
-    def __init__(self, endcallback):
+    def __init__(self, endcallback, version):
         self.endcallback = endcallback
+        self.version = version
         self.wantclose = False
-        super().__init__(None, id=wx.ID_ANY, title=u"amigaXfer", pos=wx.DefaultPosition, size=wx.Size(250, 425), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+        super().__init__(None, id=wx.ID_ANY, title=f"amigaXfer {version}", pos=wx.DefaultPosition, size=wx.Size(250, 425), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DLIGHT))
         bSizer6 = wx.BoxSizer(wx.VERTICAL)
