@@ -17,7 +17,7 @@ class AmigaXfer(wx.App):
         return
     def OnInit(self):
         self.debugger = None
-        self.version = "1.1.2"
+        self.version = "1.1.3-dev"
         self.toolmenu = MenuFrame(self.MenuDone, self.version)
         self.setupframe = SetupDialog(self.SetupDialogDone, self.version)
         self.setupframe.Show()
