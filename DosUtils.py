@@ -23,6 +23,7 @@ class DosUtils(object):
             if actualLength < self.bufsize:
                 break
         self.doslib.Close(fh)
+        self.execlib.FreeMem(bufaddr, self.bufsize)
         return bytes(data)
     def writefile(self, filepath, data):
         bufsize = min(self.bufsize, len(data))
