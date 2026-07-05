@@ -289,7 +289,7 @@ class SCSIDevice(object):
             else:
                 raise ValueError()
         else:
-            ioerr = self.cmd_read(addr, length, offset)
+            ioerr = self.cmd_write(addr, length, offset)
         return ioerr
     def read_steps(self, addr, length, start, step):
         if ((start+length) >= 1<<32) and not self.has_64bit():
