@@ -68,7 +68,7 @@ class DosLibrary(Library):
     ID_VALIDATED = 82 #write enabled, too
     def __init__(self, debugger, base): #FIXME: Add a sanity check: Are we a Process?.
         if not base:
-            raise ValueException()
+            raise ValueError()
         self.base = base
         self.amiga = debugger
         fullversion = self.amiga.peek32(self.base + self.lib_Version)
