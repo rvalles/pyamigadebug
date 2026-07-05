@@ -327,6 +327,7 @@ class ExecLibrary(Library):
         resmodules = self.amiga.peek32(self.base + self.ResModules)
         print(f"ResModules: {hex(resmodules)}")
         curmod = self.amiga.peek32(resmodules)
+        found = False
         while curmod:
             nameptr = self.amiga.peek32(curmod+self.rt_Name)
             name = self.amiga.readstr(nameptr)
@@ -334,7 +335,6 @@ class ExecLibrary(Library):
             version = self.amiga.peek8(curmod+self.rt_Version)
             pri = self.amiga.speek8(curmod+self.rt_Pri)
             print(f"addr {hex(curmod)} name: {name} flags: {bin(flags)} version: {version} pri: {pri}")
-            found = False
             if name == resname:
                 found = True
                 self.amiga.poke32(resmodules, resaddr)
