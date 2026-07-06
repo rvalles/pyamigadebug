@@ -20,12 +20,15 @@ start:
     move.l a1,a3
     lea.l .graphicsname,a1
     jsr _LVOOldOpenLibrary(a6)
+    tst.l d0
+    beq.b .nographicslib
     movea.l d0,a6
     movea.l #0,a1
     jsr _LVOLoadView(a6) ;as kick wb floppy prompt leaves a view set.
     movea.l a6,a1
     movea.l $4,a6
     jsr _LVOCloseLibrary(a6)
+.nographicslib
     move.l a3,a1
     move.w #TD_MOTOR,io_Command(a1)
     clr.l io_Length(a1)
@@ -41,5 +44,5 @@ start:
     dc.b "bootblock_debug", 10
     dc.b "Calls Exec->Debug() in a loop.",10
     dc.b "*** Bundled with amigaXfer.",10
-    dc.b "(C) 2022 Roc Valles Domenech",10
+    dc.b "(C) 2026 Roc Valles Domenech",10
     dc.b "https://www.rvalles.net",0

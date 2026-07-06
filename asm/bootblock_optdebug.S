@@ -35,12 +35,15 @@ start:
     move.l a1,-(sp) ;ioreq backup, as there it should survive calls.
     lea.l graphicsname,a1
     jsr _LVOOldOpenLibrary(a6)
+    tst.l d0
+    beq.b .nographicslib
     movea.l d0,a6
     movea.l #0,a1
     jsr _LVOLoadView(a6) ;as kick wb floppy prompt leaves a view set.
     movea.l a6,a1
     movea.l $4,a6
     jsr _LVOCloseLibrary(a6)
+.nographicslib
     btst #6,CIAAPRA
     beq .normalboot ;left mouse button always boot normally
     bset #1,CIAAPRA ;filter off
@@ -104,5 +107,5 @@ debug:
     dc.b "Hold left mouse button to always boot normally.",10
     dc.b "Disables audio filter and installs debug() as NMI server unless LMB held.",10
     dc.b "*** Bundled with amigaXfer.",10
-    dc.b "(C) 2022 Roc Valles Domenech",10
+    dc.b "(C) 2026 Roc Valles Domenech",10
     dc.b "https://www.rvalles.net",0
