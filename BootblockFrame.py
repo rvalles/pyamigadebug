@@ -188,7 +188,6 @@ class BootblockFrame(wx.Frame):
             bbnosum[4:8] = bytes(4)
             if oldsum == self.bootblocksum(bbnosum):
                 print("New bootblock's checksum is correct. Adjusting FS flags and root block, and recalculating checksum.")
-                bootblock[4:8] == struct.pack(">I", self.bootblocksum(bootblock))
                 bootblock[3] = bbhdr[3]
                 bootblock[4:8] = bytes(4)
                 bootblock[8:12] = bbhdr[8:12]
