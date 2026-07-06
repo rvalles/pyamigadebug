@@ -66,46 +66,54 @@ class NBDServer(object):
         self.write = kwargs["write"]
         self.disksize = kwargs["disksize"]
         return
+    def recvall(self, conn, size):
+        data = bytearray()
+        while len(data) < size:
+            chunk = conn.recv(size - len(data))
+            if not chunk:
+                raise ConnectionError("NBD connection closed by peer.")
+            data += chunk
+        return bytes(data)
     def handshake_oldstyle(self, conn, disksize):
-        conn.send(self.NBD_INIT_PASSWD)
-        conn.send(self.NBD_CLISERV_MAGIC)
-        conn.send(struct.pack('>Q', disksize))
-        conn.send(bytes(4)) #flags
-        conn.send(bytes(124)) #reserved
+        conn.sendall(self.NBD_INIT_PASSWD)
+        conn.sendall(self.NBD_CLISERV_MAGIC)
+        conn.sendall(struct.pack('>Q', disksize))
+        conn.sendall(bytes(4)) #flags
+        conn.sendall(bytes(124)) #reserved
         return
     def handshake_fixednewstyle(self, conn, disksize):
         transmissionflags = self.NBD_FLAG_HAS_FLAGS
         handshakeflags = self.NBD_FLAG_FIXED_NEWSTYLE
-        conn.send(self.NBD_INIT_PASSWD)
-        conn.send(self.NBD_INIT_IHAVEOPT)
-        conn.send(struct.pack('>H', handshakeflags))
-        clientflags = struct.unpack('>I', conn.recv(4))[0]
+        conn.sendall(self.NBD_INIT_PASSWD)
+        conn.sendall(self.NBD_INIT_IHAVEOPT)
+        conn.sendall(struct.pack('>H', handshakeflags))
+        clientflags = struct.unpack('>I', self.recvall(conn, 4))[0]
         if self.debug:
             print(f'NBD client flags: {clientflags}')
         while True:
-            clientihaveopts = conn.recv(8)
+            clientihaveopts = self.recvall(conn, 8)
             if clientihaveopts!=self.NBD_INIT_IHAVEOPT:
                 print(f'NBD client IHAVEOPT was nonsense: {clientihaveopts}')
-            clientopt = struct.unpack('>I', conn.recv(4))[0]
-            clientoptsize = struct.unpack('>I', conn.recv(4))[0]
+            clientopt = struct.unpack('>I', self.recvall(conn, 4))[0]
+            clientoptsize = struct.unpack('>I', self.recvall(conn, 4))[0]
             if self.debug:
                 print(f'NBD client opt: {clientopt} size: {clientoptsize}')
-            clientoptparam = conn.recv(clientoptsize)
+            clientoptparam = self.recvall(conn, clientoptsize)
             if self.debug:
                 print(f'NBD client opt param: {clientoptparam}')
             if clientopt == self.NBD_OPT_EXPORT_NAME:
                 if self.debug:
                     print(f'NBD client sent NBD_OPT_EXPORT_NAME.')
-                conn.send(struct.pack('>Q', disksize))
-                conn.send(struct.pack('>H', transmissionflags)) #transmission flags
-                conn.send(bytes(124)) #reserved
+                conn.sendall(struct.pack('>Q', disksize))
+                conn.sendall(struct.pack('>H', transmissionflags)) #transmission flags
+                conn.sendall(bytes(124)) #reserved
                 break
             else:
                 print(f'NBD replying NBD_REP_ERR_UNSUP at unknown client option: {clientopt}.')
-                conn.send(struct.pack(">Q", self.NBD_REPLY_MAGIC))
-                conn.send(struct.pack('>I', clientopt))
-                conn.send(struct.pack('>I', self.NBD_REP_ERR_UNSUP))
-                conn.send(bytes(4)) #reply length = 0
+                conn.sendall(struct.pack(">Q", self.NBD_REPLY_MAGIC))
+                conn.sendall(struct.pack('>I', clientopt))
+                conn.sendall(struct.pack('>I', self.NBD_REP_ERR_UNSUP))
+                conn.sendall(bytes(4)) #reply length = 0
         return
     def server(self, host, port):
         #FIXME: TCP_NODELAY
@@ -119,8 +127,12 @@ class NBDServer(object):
                 self.handshake_fixednewstyle(conn, self.disksize)
                 sreq = '>IHHQQI'
                 while True:
-                    #print(conn.recv(1))
-                    (magic, cmdflags, cmdtype, handle, offset, length) = struct.unpack(sreq, conn.recv(struct.calcsize(sreq)))
+                    try:
+                        header = self.recvall(conn, struct.calcsize(sreq))
+                    except ConnectionError:
+                        print("NBD client disconnected.")
+                        break
+                    (magic, cmdflags, cmdtype, handle, offset, length) = struct.unpack(sreq, header)
                     if self.debug:
                         print(f'NBD req magic: {hex(magic)}, cmdflags: {cmdflags}, type: {cmdtype},  handle: {hex(handle)}, offset: {offset}, length: {length}.')
                     if magic != self.NBD_REQUEST_MAGIC:
@@ -130,20 +142,18 @@ class NBDServer(object):
                         if self.debug:
                             print("NBD NBD_CMD_READ")
                         data = self.read(offset, length)
-                        conn.send(struct.pack('>I', self.NBD_SIMPLE_REPLY_MAGIC))
-                        conn.send(bytes(4)) #error
-                        conn.send(struct.pack('>Q', handle))
-                        conn.send(data)
+                        conn.sendall(struct.pack('>I', self.NBD_SIMPLE_REPLY_MAGIC))
+                        conn.sendall(bytes(4)) #error
+                        conn.sendall(struct.pack('>Q', handle))
+                        conn.sendall(data)
                     elif cmdtype == self.NBD_CMD_WRITE:
                         if self.debug:
                             print("NBD NBD_CMD_WRITE")
-                        data = bytearray()
-                        while len(data) < length:
-                            data += conn.recv(length-len(data))
+                        data = self.recvall(conn, length)
                         self.write(offset, data)
-                        conn.send(struct.pack('>I', self.NBD_SIMPLE_REPLY_MAGIC))
-                        conn.send(bytes(4)) #error
-                        conn.send(struct.pack('>Q', handle))
+                        conn.sendall(struct.pack('>I', self.NBD_SIMPLE_REPLY_MAGIC))
+                        conn.sendall(bytes(4)) #error
+                        conn.sendall(struct.pack('>Q', handle))
                     elif cmdtype == self.NBD_CMD_DISC:
                         if self.debug:
                             print("NBD NBD_CMD_DISC")
