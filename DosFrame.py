@@ -316,6 +316,7 @@ class DosFrame(wx.Frame):
                 wx.CallAfter(self.UpdateStatus, "IOErr.")
                 success = self.doslib.Close(dosfh)
                 wx.CallAfter(self.Stop)
+                return
             block += 1
             wx.CallAfter(self.UpdateProgressValue, block)
             if self.abort.is_set():
