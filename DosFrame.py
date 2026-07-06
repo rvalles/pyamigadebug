@@ -159,7 +159,6 @@ class DosFrame(wx.Frame):
         threading.Thread(target=self.FromAmigaWorker, args=(localpath, amigapath, overwrite)).start()
         return
     def Stop(self):
-        self.doslib.Delay(self.delay)
         self.timer.Stop()
         self.busy = False
         self.m_abort.Enable(False)
@@ -169,15 +168,19 @@ class DosFrame(wx.Frame):
         else:
             self.Enablement(True)
         return
+    def StopFromWorker(self):
+        self.doslib.Delay(self.delay)
+        wx.CallAfter(self.Stop)
+        return
     def ToAmigaWorker(self, localpath, amigapath, overwrite):
         wx.CallAfter(self.UpdateProgressPulse)
         if not amigapath:
             wx.CallAfter(self.UpdateStatus, "DstFile?")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         if not ':' in amigapath:
             wx.CallAfter(self.UpdateStatus, "DstVol?")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         if amigapath[-1] == '/':
             amigapath = amigapath[:-1]
@@ -199,20 +202,20 @@ class DosFrame(wx.Frame):
             data = None
         if not data:
             wx.CallAfter(self.UpdateStatus, "SrcFile?")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         voladdr = self.snip.getaddrstr(vol + ':')
         lock = self.doslib.Lock(voladdr, self.doslib.ACCESS_READ)
         if not lock:
             print("Could not get read lock on volume.")
             wx.CallAfter(self.UpdateStatus, "DstVol?")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         if not self.doslib.Info(lock, self.bufaddr):
             print("Could not Info() lock.")
             self.doslib.UnLock(lock)
             wx.CallAfter(self.UpdateStatus, "InfoErr.")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         self.doslib.UnLock(lock)
         diskstate = self.amiga.speek32(self.bufaddr + self.doslib.id_DiskState)
@@ -220,17 +223,17 @@ class DosFrame(wx.Frame):
         if diskstate == self.doslib.ID_WRITE_PROTECTED:
             print("Disk state ID_WRITE_PROTECTED thus not writable.")
             wx.CallAfter(self.UpdateStatus, "WriteProt?")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         if diskstate == self.doslib.ID_VALIDATING:
             print("Disk state ID_VALIDATING thus not writable.")
             wx.CallAfter(self.UpdateStatus, "DskInval?")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         if diskstate != self.doslib.ID_VALIDATED:
             print(f"Disk state not ID_VALIDATED: {diskstate}")
             wx.CallAfter(self.UpdateStatus, "InfoUnk?!")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         amigapathaddr = self.snip.getaddrstr(amigapath)
         lock = self.doslib.Lock(amigapathaddr, self.doslib.ACCESS_READ)
@@ -239,7 +242,7 @@ class DosFrame(wx.Frame):
                 print("Could not Examine() lock.")
                 self.doslib.UnLock(lock)
                 wx.CallAfter(self.UpdateStatus, "ExamErr.")
-                wx.CallAfter(self.Stop)
+                self.StopFromWorker()
                 return
             self.doslib.UnLock(lock)
             filetype = self.amiga.speek32(self.bufaddr + self.doslib.fib_DirEntryType)
@@ -247,7 +250,7 @@ class DosFrame(wx.Frame):
             if (filetype < 0) and (not overwrite):
                 print("File exists, and overwrite is not enabled.")
                 wx.CallAfter(self.UpdateStatus, "OverWrit?")
-                wx.CallAfter(self.Stop)
+                self.StopFromWorker()
                 return
             if filetype > 0:
                 basename = os.path.basename(localpath)
@@ -262,7 +265,7 @@ class DosFrame(wx.Frame):
                         print("Could not Examine() lock.")
                         self.doslib.UnLock(lock)
                         wx.CallAfter(self.UpdateStatus, "SrcFile?")
-                        wx.CallAfter(self.Stop)
+                        self.StopFromWorker()
                         return
                     self.doslib.UnLock(lock)
                     filetype = self.amiga.speek32(self.bufaddr + self.doslib.fib_DirEntryType)
@@ -271,24 +274,24 @@ class DosFrame(wx.Frame):
                         print("Target directory exists, but name inside exists and is not a file.")
                         print(f"path: {localpath}")
                         wx.CallAfter(self.UpdateStatus, "LNotFile?")
-                        wx.CallAfter(self.Stop)
+                        self.StopFromWorker()
                         return
                     if not overwrite:
                         print("File exists, and overwrite is not enabled.")
                         wx.CallAfter(self.UpdateStatus, "OverWrit?")
-                        wx.CallAfter(self.Stop)
+                        self.StopFromWorker()
                         return
         print(f"Amiga path: {amigapath}, Local path: {localpath}")
         if self.abort.is_set():
             wx.CallAfter(self.UpdateStatus, "UserStop.")
             print("User stopped.")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         dosfh = self.doslib.Open(amigapathaddr, self.doslib.MODE_NEWFILE)
         print(f"dosfh: {hex(dosfh)}")
         if not dosfh:
             wx.CallAfter(self.UpdateStatus, "DstFile?")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         blocks = len(data) // self.bufsize
         if len(data) % self.bufsize:
@@ -306,7 +309,7 @@ class DosFrame(wx.Frame):
                 success = self.doslib.Close(dosfh)
                 wx.CallAfter(self.UpdateStatus, "UserStop.")
                 print("User stopped.")
-                wx.CallAfter(self.Stop)
+                self.StopFromWorker()
                 return
             wx.CallAfter(self.UpdateStatus, "Write")
             returnedLength = self.doslib.Write(dosfh, self.bufaddr, stepsize)
@@ -315,7 +318,7 @@ class DosFrame(wx.Frame):
                 print("Error: size written != requested length.")
                 wx.CallAfter(self.UpdateStatus, "IOErr.")
                 success = self.doslib.Close(dosfh)
-                wx.CallAfter(self.Stop)
+                self.StopFromWorker()
                 return
             block += 1
             wx.CallAfter(self.UpdateProgressValue, block)
@@ -323,14 +326,14 @@ class DosFrame(wx.Frame):
                 success = self.doslib.Close(dosfh)
                 wx.CallAfter(self.UpdateStatus, "UserStop.")
                 print("User stopped.")
-                wx.CallAfter(self.Stop)
+                self.StopFromWorker()
                 return
         print("Closing file.")
         wx.CallAfter(self.UpdateStatus, "Close")
         success = self.doslib.Close(dosfh)
         print("Transfer end.")
         wx.CallAfter(self.UpdateStatus, "Done.")
-        wx.CallAfter(self.Stop)
+        self.StopFromWorker()
         return
     def FromAmigaWorker(self, localpath, amigapath, overwrite):
         wx.CallAfter(self.UpdateProgressPulse)
@@ -338,7 +341,7 @@ class DosFrame(wx.Frame):
             localpath = localpath[:-1]
         if not amigapath or amigapath[-1] == ':' or amigapath[-1] == '/':
             wx.CallAfter(self.UpdateStatus, "SrcFile?")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         if amigapath[0:4].upper() == "RAM:":
             self.delay = 0
@@ -352,7 +355,7 @@ class DosFrame(wx.Frame):
             if not os.access(localpath, os.W_OK):
                 wx.CallAfter(self.UpdateStatus, "LDirPerm?")
                 print("Target directory is not writable.")
-                wx.CallAfter(self.Stop)
+                self.StopFromWorker()
                 return
             else:
                 basename = re.split(':|/', amigapath)[-1]
@@ -362,18 +365,18 @@ class DosFrame(wx.Frame):
                 if not os.access(localpath, os.W_OK):
                     print("Target is not writable.")
                     wx.CallAfter(self.UpdateStatus, "LFilePerm?")
-                    wx.CallAfter(self.Stop)
+                    self.StopFromWorker()
                     return
                 elif not overwrite:
                     print("File exists, and overwrite is not enabled.")
                     wx.CallAfter(self.UpdateStatus, "OverWrit?")
-                    wx.CallAfter(self.Stop)
+                    self.StopFromWorker()
                     return
             else:
                 print("Target directory exists, but name inside exists and is not a file.")
                 print(f"path: {localpath}")
                 wx.CallAfter(self.UpdateStatus, "LNotFile?")
-                wx.CallAfter(self.Stop)
+                self.StopFromWorker()
                 return
         print(f"Amiga path: {amigapath}, Local path: {localpath}")
         try:
@@ -383,20 +386,20 @@ class DosFrame(wx.Frame):
         if not fh:
             print("Could not open destination file.")
             wx.CallAfter(self.UpdateStatus, "DstFile?")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         amigapathaddr = self.snip.getaddrstr(amigapath)
         lock = self.doslib.Lock(amigapathaddr, self.doslib.ACCESS_READ)
         if not lock:
             print("Could not Lock() source file.")
             wx.CallAfter(self.UpdateStatus, "SrcFile?")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         if not self.doslib.Examine(lock, self.bufaddr):
             print("Could not Examine() lock.")
             self.doslib.UnLock(lock)
             wx.CallAfter(self.UpdateStatus, "SrcFile?")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         self.doslib.UnLock(lock)
         length = self.amiga.peek32(self.bufaddr + self.doslib.fib_Size)
@@ -404,13 +407,13 @@ class DosFrame(wx.Frame):
         if self.abort.is_set():
             wx.CallAfter(self.UpdateStatus, "UserStop.")
             print("User stopped.")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         dosfh = self.doslib.Open(amigapathaddr, self.doslib.MODE_OLDFILE)
         if not dosfh:
             print("Could not Open() source file.")
             wx.CallAfter(self.UpdateStatus, "SrcFile?")
-            wx.CallAfter(self.Stop)
+            self.StopFromWorker()
             return
         blocks = length // self.bufsize
         if length % self.bufsize:
@@ -429,13 +432,13 @@ class DosFrame(wx.Frame):
                 print("Error: size read != requested length.")
                 self.doslib.Close(dosfh)
                 wx.CallAfter(self.UpdateStatus, "IOErr.")
-                wx.CallAfter(self.Stop)
+                self.StopFromWorker()
                 return
             if self.abort.is_set():
                 success = self.doslib.Close(dosfh)
                 wx.CallAfter(self.UpdateStatus, "UserStop.")
                 print("User stopped.")
-                wx.CallAfter(self.Stop)
+                self.StopFromWorker()
                 return
             wx.CallAfter(self.UpdateStatus, "Xfer+CRC")
             fh.write(self.snip.verifiedreadmem(self.bufaddr, returnedLength))
@@ -445,7 +448,7 @@ class DosFrame(wx.Frame):
                 success = self.doslib.Close(dosfh)
                 wx.CallAfter(self.UpdateStatus, "UserStop.")
                 print("User stopped.")
-                wx.CallAfter(self.Stop)
+                self.StopFromWorker()
                 return
         print("Closing file.")
         wx.CallAfter(self.UpdateStatus, "Close")
@@ -453,7 +456,7 @@ class DosFrame(wx.Frame):
         success = self.doslib.Close(dosfh)
         print("Transfer end.")
         wx.CallAfter(self.UpdateStatus, "Done.")
-        wx.CallAfter(self.Stop)
+        self.StopFromWorker()
         return
     def UpdateStatus(self, status):
         self.m_status.ChangeValue(status)
