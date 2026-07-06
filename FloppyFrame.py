@@ -424,6 +424,7 @@ class FloppyFrame(wx.Frame):
                     print("\nXFER CRC ERROR.")
                     self.fxio.motoroff()
                     wx.CallAfter(self.Stop)
+                    return
             if self.abort.is_set():
                 wx.CallAfter(self.UpdateStatus, "UserStop.")
                 print("\nUser stopped.")
@@ -640,6 +641,7 @@ class FloppyFrame(wx.Frame):
                     print("\nXFER CRC ERROR.")
                     self.fxio.motoroff()
                     wx.CallAfter(self.Stop)
+                    return
             diskdump += trackdump
         wx.CallAfter(self.UpdateTrack, 0, 0, "Seek")
         self.fxio.settrack(0)
