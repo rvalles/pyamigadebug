@@ -48,9 +48,9 @@ start:
     beq .normalboot ;left mouse button always boot normally
     bset #1,CIAAPRA ;filter off
     btst #14,SERDATR ;RBF
-    bne debug ;if serial input, debug
+    bne dodebug ;if serial input, debug
     btst #2,POTINP ;DATLY
-    beq debug ;right mouse always debug
+    beq dodebug ;right mouse always debug
     move.l #22, d0
     move.l #MEMF_PUBLIC, d1
     jsr _LVOAllocMem(a6) ;get ram for Interrupt structure.
@@ -92,7 +92,7 @@ good:
     move.l (sp)+,a1 ;compatibility with early ks. They need a1=ioreq.
     move.w #$024D,COLOR00 ;set color to show this custom bootblock is booting
     rts
-debug:
+dodebug:
     move.l (sp)+,a1 ;restore ioreq as we need to do i/o
     move.w #TD_MOTOR,io_Command(a1)
     clr.l io_Length(a1)
