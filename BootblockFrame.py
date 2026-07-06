@@ -147,6 +147,7 @@ class BootblockFrame(wx.Frame):
         floppy = TrackdiskDevice(debugger=self.amiga, execlib=self.execlib, ioreqaddr=self.getioreq(drive))
         if len(blockdump) > 1024:
             print("Passed bootblock is above 1024 bytes. Not supported.")
+            wx.CallAfter(self.InstallCleanup)
             return
         bootblock = bytearray(blockdump)
         if len(bootblock) < 1024:
