@@ -22,6 +22,9 @@ def main():
   if bootblock[0:3] != b'DOS':
     print("Error: Bootblock signature missing.")
     exit(2)
+  if len(bootblock) > 1024:
+    print("Error: Bootblock is larger than 1024 bytes.")
+    exit(3)
   bootblock += bytes(1024 - len(bootblock))
   bootblock[4:8] = bytes(4)
   cksum = bbchecksum(bootblock)
