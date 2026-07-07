@@ -45,7 +45,7 @@ start:
     jsr _LVOCloseLibrary(a6)
 .nographicslib
     btst #6,CIAAPRA
-    beq .normalboot ;left mouse button always boot normally
+    beq normalboot ;left mouse button always boot normally
     bset #1,CIAAPRA ;filter off
     btst #14,SERDATR ;RBF
     bne dodebug ;if serial input, debug
@@ -63,7 +63,7 @@ start:
     move.l a0, is_Code(a1)
     move.l #15, d0 ;Level7 (NMI)
     jsr _LVOAddIntServer(a6)
-.normalboot
+normalboot
     lea.l expansionname(pc),a1
     jsr _LVOOldOpenLibrary(a6)
     tst.l d0
@@ -94,14 +94,14 @@ good:
     move.w #$024D,COLOR00 ;set color to show this custom bootblock is booting
     rts
 dodebug:
-    move.l (sp)+,a1 ;restore ioreq as we need to do i/o
+    move.l (sp),a1 ;peek ioreq (needed for i/o), leave it on the stack for later
     move.w #TD_MOTOR,io_Command(a1)
     clr.l io_Length(a1)
     jsr _LVODoIO(a6) ;turn boot drive motor off
     move.w #$00F0,COLOR00 ;green screen before calling debug
     jsr _LVODebug(a6)
     move.w #$0F00,COLOR00 ;red screen when returning from debug
-    rts
+    bra normalboot ;Debug() returned on its own (e.g. SAD connection timeout) -- continue booting normally instead of returning garbage to strap.
 .banner
     dc.b "bootblock_optdebug", 10
     dc.b "Exec->Debug() on serial input or right mouse button held.",10
