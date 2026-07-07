@@ -77,6 +77,7 @@ start:
     bne good ;if d0 != 0 that's good
     move.w #$0F0F,COLOR00 ;color for this odd situation
     sub.l #1,d0 ;return bad
+    move.l (sp)+,a1 ;restore ioreq, stack must balance before returning to strap
     rts
 expansionname:
     dc.b "expansion.library",0
